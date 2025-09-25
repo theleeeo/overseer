@@ -1,0 +1,401 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  AlertTriangle,
+  RefreshCw,
+  Server,
+  AlertCircleIcon,
+  Clock,
+} from "lucide-react";
+import { getVersionStatus, getEnvironmentRisk } from "@/lib/version-utils";
+import { AdminConfigPanel } from "@/components/admin-config-panel";
+
+interface Application {
+  id: string;
+  name: string;
+  description: string;
+  versionType: "semantic" | "commit" | "timestamp";
+  order: number;
+}
+
+interface Environment {
+  id: string;
+  name: string;
+  description: string;
+  category: "production" | "test";
+  order: number;
+}
+
+interface VersionCell {
+  environment_id: string;
+  application_id: string;
+  version: string;
+  deployed_at: string;
+}
+
+interface LatestVersion {
+  application_id: string;
+  version: string;
+}
+
+interface AppVersionInfo {
+  id: string;
+  name: string;
+  description: string;
+  versionType: string;
+  versions: Record<string, { version: string; deployedAt?: string } | null>;
+  isOutdated: boolean;
+  latestVersion: string;
+}
+
+export default function VersionDashboard() {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [environments, setEnvironments] = useState<Environment[]>([]);
+  const [versionCells, setVersionCells] = useState<VersionCell[]>([]);
+  const [latestVersions, setLatestVersions] = useState<LatestVersion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch all data in parallel
+      const [appsResponse, envsResponse, versionsResponse] = await Promise.all([
+        fetch("/api/applications"),
+        fetch("/api/environments"),
+        fetch("/api/versions"),
+      ]);
+
+      const [appsData, envsData, versionsData] = await Promise.all([
+        appsResponse.json(),
+        envsResponse.json(),
+        versionsResponse.json(),
+      ]);
+
+      setApplications(appsData.applications || []);
+      setEnvironments(envsData.environments || []);
+      setVersionCells(versionsData.cells || []);
+      setLatestVersions(versionsData.latest || []);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+    const interval = setInterval(fetchAllData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          <span>Loading version data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (applications.length === 0 || environments.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
+          <p>Failed to load configuration data</p>
+          <Button onClick={fetchAllData} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const appVersions: AppVersionInfo[] = applications.map((app) => {
+    const versions: Record<
+      string,
+      { version: string; deployedAt?: string } | null
+    > = {};
+    let isOutdated = false;
+
+    // Initialize all environments as null (empty cells)
+    environments.forEach((env) => {
+      versions[env.id] = null;
+    });
+
+    // Fill in actual version data where it exists
+    console.log("Version Cells:", versionCells);
+    versionCells
+      .filter((cell) => cell.application_id === app.id)
+      .forEach((cell) => {
+        versions[cell.environment_id] = {
+          version: cell.version,
+          deployedAt: cell.deployed_at,
+        };
+      });
+
+    // Find latest version for this app
+    const latestVersion =
+      latestVersions.find((lv) => lv.application_id === app.id)?.version ||
+      "unknown";
+
+    // Check if any environment is outdated
+    Object.values(versions).forEach((versionData) => {
+      if (versionData) {
+        const status = getVersionStatus(versionData.version, latestVersion);
+        if (status.status !== "current") {
+          isOutdated = true;
+        }
+      }
+    });
+
+    return {
+      id: app.id,
+      name: app.name,
+      description: app.description,
+      versionType: app.versionType,
+      versions,
+      isOutdated,
+      latestVersion,
+    };
+  });
+
+  const criticalApps = appVersions
+    .map((app) => {
+      const criticalEnvs = environments
+        .filter((env) => {
+          const versionData = app.versions[env.id];
+          if (!versionData) return false;
+          const status = getVersionStatus(
+            versionData.version,
+            app.latestVersion
+          );
+          return status.severity === "critical";
+        })
+        .map((env) => env.id);
+      return criticalEnvs.length > 0
+        ? { name: app.name, environments: criticalEnvs }
+        : null;
+    })
+    .filter(Boolean) as Array<{ name: string; environments: string[] }>;
+
+  const sortedApps = appVersions.sort((a, b) => {
+    // First, try to sort by the original application order
+    const appA = applications.find((app) => app.id === a.id);
+    const appB = applications.find((app) => app.id === b.id);
+
+    if (appA?.order !== undefined && appB?.order !== undefined) {
+      return appA.order - appB.order;
+    }
+
+    // Fallback to risk-based sorting if no order is defined
+    const aVersions = Object.fromEntries(
+      Object.entries(a.versions)
+        .filter(([, v]) => v !== null)
+        .map(([k, v]) => [k, v!.version])
+    );
+    const bVersions = Object.fromEntries(
+      Object.entries(b.versions)
+        .filter(([, v]) => v !== null)
+        .map(([k, v]) => [k, v!.version])
+    );
+
+    const aRisk = getEnvironmentRisk(aVersions, a.latestVersion);
+    const bRisk = getEnvironmentRisk(bVersions, b.latestVersion);
+
+    const severityOrder = { critical: 0, warning: 1, good: 2 };
+    return severityOrder[aRisk.level] - severityOrder[bRisk.level];
+  });
+
+  // Sort environments by order
+  const sortedEnvironments = [...environments].sort(
+    (a, b) => a.order - b.order
+  );
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case "critical":
+        return "bg-destructive text-destructive-foreground";
+      case "warning":
+        return "bg-yellow-500 text-yellow-950";
+      case "info":
+        return "bg-blue-500 text-blue-950";
+      default:
+        return "bg-green-500 text-green-950";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Version Monitor
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span>
+                {applications.length} apps • {environments.length} environments
+              </span>
+              {criticalApps.length > 0 && (
+                <span className="text-destructive font-medium">
+                  <AlertCircleIcon className="h-3 w-3 inline mr-1" />
+                  {criticalApps.length} critical
+                </span>
+              )}
+              {lastUpdated && (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <AdminConfigPanel />
+            <Button onClick={fetchAllData} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="space-y-2">
+        <div className="grid grid-cols-[200px_1fr] gap-4 mb-2">
+          <div className="font-medium text-sm text-muted-foreground">
+            Application
+          </div>
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: `repeat(${sortedEnvironments.length}, 1fr)`,
+            }}
+          >
+            {sortedEnvironments.map((env) => (
+              <div
+                key={env.id}
+                className="text-center text-sm font-medium text-muted-foreground"
+              >
+                {env.name}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {sortedApps.map((app) => {
+          const populatedVersions = Object.fromEntries(
+            Object.entries(app.versions)
+              .filter(([, v]) => v !== null)
+              .map(([k, v]) => [k, v!.version])
+          );
+
+          const environmentRisk = getEnvironmentRisk(
+            populatedVersions,
+            app.latestVersion
+          );
+
+          return (
+            <Card
+              key={app.id}
+              className={`transition-all duration-200 ${
+                environmentRisk.level === "critical"
+                  ? "border-destructive bg-destructive/5"
+                  : environmentRisk.level === "warning"
+                  ? "border-yellow-500 bg-yellow-50/50"
+                  : ""
+              }`}
+            >
+              <CardContent className="p-3">
+                <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm truncate">
+                      {app.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono">
+                      Latest: {app.latestVersion}
+                    </div>
+                    {environmentRisk.level === "critical" && (
+                      <Badge variant="destructive" className="text-xs mt-1">
+                        URGENT
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div
+                    className="grid gap-2"
+                    style={{
+                      gridTemplateColumns: `repeat(${sortedEnvironments.length}, 1fr)`,
+                    }}
+                  >
+                    {sortedEnvironments.map((env) => {
+                      const versionData = app.versions[env.id];
+
+                      if (!versionData) {
+                        return (
+                          <div
+                            key={env.id}
+                            className="p-2 rounded text-center text-xs bg-muted/30 border border-dashed border-muted-foreground/20"
+                          >
+                            <div className="text-muted-foreground">—</div>
+                            <div className="text-xs opacity-50 mt-1">
+                              Not deployed
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      const version = versionData.version;
+                      const deployedAt = versionData.deployedAt;
+                      const versionStatus = getVersionStatus(
+                        version,
+                        app.latestVersion
+                      );
+
+                      return (
+                        <div
+                          key={env.id}
+                          className={`p-2 rounded text-center text-xs transition-all duration-200 ${getSeverityColor(
+                            versionStatus.severity
+                          )}`}
+                        >
+                          <div
+                            className="font-mono font-medium truncate"
+                            title={version}
+                          >
+                            {version}
+                          </div>
+                          {deployedAt && (
+                            <div className="text-xs opacity-75 mt-1">
+                              {new Date(deployedAt).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {sortedApps.length === 0 && (
+        <div className="text-center py-12">
+          <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-2">No applications found</h3>
+          <p className="text-muted-foreground">No applications to monitor.</p>
+        </div>
+      )}
+    </div>
+  );
+}

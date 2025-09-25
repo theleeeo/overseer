@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - schema: "db/schema.sql"
+    queries:
+      - "db/queries/applications.sql"
+      - "db/queries/environments.sql"
+      - "db/queries/deployments.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "repo"
+        out: "repo"
+        sql_package: "pgx/v5"
+        emit_json_tags: true

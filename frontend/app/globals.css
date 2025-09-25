@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Remove Tailwind v4 custom directives and variants for v3 compatibility */
+
+:root {
+  /* Color tokens for Tailwind v3 */
+  --background: #fff;
+  --foreground: #374151;
+  --card: #f0fdf4;
+  --card-foreground: #374151;
+  --popover: #fff;
+  --popover-foreground: #374151;
+  --primary: #15803d;
+  --primary-foreground: #fff;
+  --secondary: #f0fdf4;
+  --secondary-foreground: #374151;
+  --muted: #f0fdf4;
+  --muted-foreground: #374151;
+  --accent: #166534;
+  --accent-foreground: #374151;
+  --destructive: #dc2626;
+  --destructive-foreground: #fff;
+  --border: #e5e7eb;
+  --input: #f0fdf4;
+  --ring: #22c55e;
+  --chart-1: #15803d;
+  --chart-2: #f59e42;
+  --chart-3: #dc2626;
+  --chart-4: #ea580c;
+  --chart-5: #22c55e;
+  --radius: 0.5rem;
+  --sidebar: #f0fdf4;
+  --sidebar-foreground: #374151;
+  --sidebar-primary: #15803d;
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #22c55e;
+  --sidebar-accent-foreground: #374151;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #22c55e;
+}
+
+.dark {
+  --background: #18181b;
+  --foreground: #f3f4f6;
+  --card: #18181b;
+  --card-foreground: #f3f4f6;
+  --popover: #18181b;
+  --popover-foreground: #f3f4f6;
+  --primary: #22c55e;
+  --primary-foreground: #18181b;
+  --secondary: #334155;
+  --secondary-foreground: #f3f4f6;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f3f4f6;
+  --destructive: #dc2626;
+  --destructive-foreground: #f3f4f6;
+  --border: #334155;
+  --input: #334155;
+  --ring: #22c55e;
+  --chart-1: #22c55e;
+  --chart-2: #f59e42;
+  --chart-3: #dc2626;
+  --chart-4: #ea580c;
+  --chart-5: #22c55e;
+  --sidebar: #18181b;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #22c55e;
+  --sidebar-primary-foreground: #f3f4f6;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f3f4f6;
+  --sidebar-border: #334155;
+  --sidebar-ring: #22c55e;
+}
+
+/* Remove @theme inline for Tailwind v3 compatibility */
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
