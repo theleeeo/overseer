@@ -59,6 +59,7 @@ export default function VersionDashboard() {
   const [latestVersions, setLatestVersions] = useState<LatestVersion[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [spinning, setSpinning] = useState(false);
 
   const fetchAllData = async () => {
     try {
@@ -95,18 +96,18 @@ export default function VersionDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>Loading version data...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (applications.length === 0 || environments.length === 0) {
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span>Loading version data...</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -133,7 +134,6 @@ export default function VersionDashboard() {
     });
 
     // Fill in actual version data where it exists
-    console.log("Version Cells:", versionCells);
     versionCells
       .filter((cell) => cell.application_id === app.id)
       .forEach((cell) => {
@@ -262,8 +262,18 @@ export default function VersionDashboard() {
           </div>
           <div className="flex gap-2">
             <AdminConfigPanel />
-            <Button onClick={fetchAllData} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4" />
+            <Button
+              onClick={() => {
+                fetchAllData();
+                setSpinning(true);
+                setTimeout(() => setSpinning(false), 500);
+              }}
+              variant="outline"
+              size="sm"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${spinning ? "animate-spinOnce" : ""}`}
+              />
             </Button>
           </div>
         </div>
