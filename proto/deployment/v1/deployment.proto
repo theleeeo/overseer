@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package deployment.v1;
+
+option go_package = "github.com/theleeeo/overseer/api-go/deployment/v1;deployment";
+
+import "google/protobuf/timestamp.proto";
+
+message Deployment {
+  int32 environment_id = 1;
+  int32 application_id = 2;
+  string version = 3;
+  google.protobuf.Timestamp deployed_at = 4;
+}
+
+service DeploymentService {
+  // rpc Get(GetRequest) returns (GetResponse);
+
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  rpc List(ListRequest) returns (ListResponse);
+}
+
+message ResponsePagination { int32 total = 1; }
+
+// message GetRequest {
+//   int32 environment_id = 1;
+//   int32 application_id = 2;
+// }
+
+// message GetResponse { Deployment deployment = 1; }
+
+message RegisterRequest {
+  int32 environment_id = 1;
+  int32 application_id = 2;
+  string version = 3;
+  google.protobuf.Timestamp deployed_at = 4;
+}
+
+message RegisterResponse { int32 id = 1; }
+
+message ListRequest {}
+
+message ListResponse {
+  repeated Deployment deployments = 1;
+  ResponsePagination pagination = 2;
+}

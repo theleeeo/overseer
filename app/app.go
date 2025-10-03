@@ -29,7 +29,7 @@ type App struct {
 	db *repo.Queries
 }
 
-func NewApp(db *repo.Queries) *App {
+func New(db *repo.Queries) *App {
 	return &App{db: db}
 }
 

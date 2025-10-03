@@ -7,10 +7,14 @@ import (
 	"log/slog"
 	"maps"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/signal"
+	applicationpb "overseer/api-go/application/v1"
+	deploymentpb "overseer/api-go/deployment/v1"
+	environmentpb "overseer/api-go/environment/v1"
 	"overseer/app"
 	"overseer/datasource"
 	"overseer/entrypoints"
@@ -19,6 +23,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
@@ -44,7 +50,7 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			log.Printf("internal error: %s, id: %d, path: %s", removeTrailingNewline(respCatcher.Body.String()), responseId, r.URL.Path)
 
 			respCatcher.Body.Reset()
-			_, err := respCatcher.Body.WriteString(fmt.Sprintf("internal error, id: %d", responseId))
+			_, err := fmt.Fprintf(respCatcher.Body, "internal error, id: %d", responseId)
 			if err != nil {
 				log.Printf("failed to write to response body: %v", err)
 			}
@@ -79,25 +85,38 @@ func (r *Runner) Run(ctx context.Context) error {
 
 	queries := repo.New(dbpool)
 
-	app := app.NewApp(queries)
+	app := app.New(queries)
+
+	mux := http.NewServeMux()
+	entrypoints.RegisterRestHandlers(mux, app)
+	server := &http.Server{Addr: ":8080", Handler: LoggerMiddleware(mux)}
+
+	applicationGrpc := entrypoints.NewApplicationServer(app)
+	environmentGrpc := entrypoints.NewEnvironmentServer(app)
+	deploymentGrpc := entrypoints.NewDeploymentServer(app)
+
+	grpcServer := grpc.NewServer(
+	// grpc.MaxRecvMsgSize(mb256),
+	// grpc.MaxSendMsgSize(mb256),
+	// grpc.ChainUnaryInterceptor(unaryInterceptors...),
+	)
+
+	reflection.Register(grpcServer)
+
+	applicationpb.RegisterApplicationServiceServer(grpcServer, applicationGrpc)
+	environmentpb.RegisterEnvironmentServiceServer(grpcServer, environmentGrpc)
+	deploymentpb.RegisterDeploymentServiceServer(grpcServer, deploymentGrpc)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	nomadSource := datasource.NewNomadSource("http://localhost:4646", "your-nomad-token")
-	eventStream, err := nomadSource.StreamEvents(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to start event stream: %w", err)
-	}
-
-	mux := http.NewServeMux()
-	entrypoints.RegisterRestHandlers(mux, app)
-
-	server := &http.Server{Addr: ":8080", Handler: LoggerMiddleware(mux)}
+	// nomadSource := datasource.NewNomadSource("http://localhost:4646", "your-nomad-token", *slog.Default().WithGroup("NomadSource"))
+	mockSource := &datasource.MockSource{}
 
 	wg := sync.WaitGroup{}
+
 	wg.Go(func() {
-		if err := app.RunVersionStream(eventStream); err != nil {
+		if err := app.RunVersionStream(ctx, mockSource); err != nil {
 			errChan <- fmt.Errorf("version stream error: %w", err)
 		}
 
@@ -107,15 +126,38 @@ func (r *Runner) Run(ctx context.Context) error {
 	wg.Go(func() {
 		go func() {
 			<-ctx.Done()
-			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+			grpcServer.GracefulStop()
+		}()
+
+		lis, err := net.Listen("tcp", "localhost:9090")
+		if err != nil {
+			errChan <- fmt.Errorf("failed to listen on port 9090: %w", err)
+			return
+		}
+
+		slog.Info("starting the grpc server", slog.String("address", lis.Addr().String()))
+
+		if err := grpcServer.Serve(lis); err != nil {
+			errChan <- fmt.Errorf("grpc server error: %w", err)
+		}
+
+		slog.Info("gRPC server stopped.")
+	})
+
+	wg.Go(func() {
+		go func() {
+			<-ctx.Done()
+			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer shutdownCancel()
 			if err := server.Shutdown(shutdownCtx); err != nil {
 				errChan <- fmt.Errorf("server shutdown error: %w", err)
 			}
 		}()
 
+		slog.Info("starting the http server on :8080")
+
 		err := server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
+		if err != http.ErrServerClosed {
 			errChan <- fmt.Errorf("http server error: %w", err)
 		}
 

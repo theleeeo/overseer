@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package environment.v1;
+
+option go_package = "github.com/theleeeo/overseer/api-go/environment/v1;environment";
+
+message Environment {
+  int32 id = 1;
+  string name = 2;
+  int32 sort_order = 3;
+}
+
+service EnvironmentService {
+  // rpc Get(GetRequest) returns (GetResponse);
+
+  rpc Create(CreateRequest) returns (CreateResponse);
+
+  rpc List(ListRequest) returns (ListResponse);
+
+  rpc Update(UpdateRequest) returns (UpdateResponse);
+
+  rpc SetSortOrder(SetSortOrderRequest) returns (SetSortOrderResponse);
+}
+
+message ResponsePagination { int32 total = 1; }
+
+// message GetRequest { int32 id = 1; }
+
+// message GetResponse { Environment environment = 1; }
+
+message CreateRequest { string name = 1; }
+
+message CreateResponse { int32 id = 1; }
+
+message ListRequest {}
+
+message ListResponse {
+  repeated Environment environments = 1;
+  ResponsePagination pagination = 2;
+}
+
+message UpdateRequest {
+  int32 id = 1;
+  optional string name = 2;
+}
+
+message UpdateResponse {}
+
+message SetSortOrderRequest { repeated int32 ids_in_order = 1; }
+
+message SetSortOrderResponse {}
