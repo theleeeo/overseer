@@ -204,7 +204,6 @@ func (x *RegisterRequest) GetDeployedAt() *timestamppb.Timestamp {
 
 type RegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -237,13 +236,6 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
 func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_deployment_v1_deployment_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *RegisterResponse) GetId() int32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
 }
 
 type ListRequest struct {
@@ -353,9 +345,8 @@ const file_deployment_v1_deployment_proto_rawDesc = "" +
 	"\x0eapplication_id\x18\x02 \x01(\x05R\rapplicationId\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\tR\aversion\x12;\n" +
 	"\vdeployed_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"deployedAt\"\"\n" +
-	"\x10RegisterResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\"\r\n" +
+	"deployedAt\"\x12\n" +
+	"\x10RegisterResponse\"\r\n" +
 	"\vListRequest\"\x8e\x01\n" +
 	"\fListResponse\x12;\n" +
 	"\vdeployments\x18\x01 \x03(\v2\x19.deployment.v1.DeploymentR\vdeployments\x12A\n" +

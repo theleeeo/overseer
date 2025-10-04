@@ -37,7 +37,7 @@ message RegisterRequest {
   google.protobuf.Timestamp deployed_at = 4;
 }
 
-message RegisterResponse { int32 id = 1; }
+message RegisterResponse {}
 
 message ListRequest {}
 

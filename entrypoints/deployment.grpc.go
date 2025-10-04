@@ -44,12 +44,17 @@ func (d *DeploymentServer) List(ctx context.Context, req *deploymentpb.ListReque
 }
 
 func (d *DeploymentServer) Register(ctx context.Context, req *deploymentpb.RegisterRequest) (*deploymentpb.RegisterResponse, error) {
-	if err := d.app.RegisterDeployment(ctx, app.RegisterDeploymentParams{
+	params := app.RegisterDeploymentParams{
 		EnvironmentId: int(req.EnvironmentId),
 		ApplicationId: int(req.ApplicationId),
 		Version:       req.Version,
-		DeployedAt:    req.DeployedAt.AsTime(),
-	}); err != nil {
+	}
+
+	if req.DeployedAt != nil {
+		params.DeployedAt = req.DeployedAt.AsTime()
+	}
+
+	if err := d.app.RegisterDeployment(ctx, params); err != nil {
 		return nil, err
 	}
 
