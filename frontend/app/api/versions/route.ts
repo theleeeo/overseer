@@ -5,7 +5,7 @@ export async function GET() {
     const res = await fetch(
       `${
         process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080"
-      }/applications`,
+      }/deployments`,
       { cache: "no-store" }
     );
     if (!res.ok) {

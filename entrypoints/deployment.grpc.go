@@ -5,8 +5,6 @@ import (
 	deploymentpb "overseer/api-go/deployment/v1"
 	"overseer/app"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -45,7 +43,15 @@ func (d *DeploymentServer) List(ctx context.Context, req *deploymentpb.ListReque
 	}, nil
 }
 
-// Register implements deployment.DeploymentServiceServer.
 func (d *DeploymentServer) Register(ctx context.Context, req *deploymentpb.RegisterRequest) (*deploymentpb.RegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+	if err := d.app.RegisterDeployment(ctx, app.RegisterDeploymentParams{
+		EnvironmentId: int(req.EnvironmentId),
+		ApplicationId: int(req.ApplicationId),
+		Version:       req.Version,
+		DeployedAt:    req.DeployedAt.AsTime(),
+	}); err != nil {
+		return nil, err
+	}
+
+	return &deploymentpb.RegisterResponse{}, nil
 }

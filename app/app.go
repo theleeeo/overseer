@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"overseer/repo"
 	"time"
 )
@@ -164,4 +165,37 @@ func (a *App) ListDeployments(ctx context.Context) ([]Deployment, error) {
 	}
 
 	return result, nil
+}
+
+type RegisterDeploymentParams struct {
+	EnvironmentId int
+	ApplicationId int
+	Version       string
+	DeployedAt    time.Time
+}
+
+func (a *App) RegisterDeployment(ctx context.Context, params RegisterDeploymentParams) error {
+	if params.EnvironmentId == 0 {
+		return errors.New("environment id is required")
+	}
+
+	if params.ApplicationId == 0 {
+		return errors.New("application id is required")
+	}
+
+	if params.Version == "" {
+		return errors.New("version is required")
+	}
+
+	if params.DeployedAt.IsZero() {
+		params.DeployedAt = time.Now().UTC()
+	}
+
+	_, err := a.db.UpsertDeployment(ctx, repo.UpsertDeploymentParams{
+		EnvironmentID: int32(params.EnvironmentId),
+		ApplicationID: int32(params.ApplicationId),
+		Version:       params.Version,
+		Column4:       params.DeployedAt,
+	})
+	return err
 }
