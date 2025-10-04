@@ -110,13 +110,13 @@ func (r *Runner) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// nomadSource := datasource.NewNomadSource("http://localhost:4646", "your-nomad-token", *slog.Default().WithGroup("NomadSource"))
-	mockSource := &datasource.MockSource{}
+	nomadSource := datasource.NewNomadSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default().WithGroup("NomadSource"))
+	// mockSource := &datasource.MockSource{}
 
 	wg := sync.WaitGroup{}
 
 	wg.Go(func() {
-		if err := app.RunVersionStream(ctx, mockSource); err != nil {
+		if err := app.RunVersionStream(ctx, nomadSource); err != nil {
 			errChan <- fmt.Errorf("version stream error: %w", err)
 		}
 
@@ -124,10 +124,14 @@ func (r *Runner) Run(ctx context.Context) error {
 	})
 
 	wg.Go(func() {
+		defer slog.Info("gRPC server stopped")
+
 		go func() {
 			<-ctx.Done()
 			grpcServer.GracefulStop()
 		}()
+
+		slog.Info("starting the grpc server", slog.String("address", "localhost:9090"))
 
 		lis, err := net.Listen("tcp", "localhost:9090")
 		if err != nil {
@@ -135,16 +139,15 @@ func (r *Runner) Run(ctx context.Context) error {
 			return
 		}
 
-		slog.Info("starting the grpc server", slog.String("address", lis.Addr().String()))
-
 		if err := grpcServer.Serve(lis); err != nil {
 			errChan <- fmt.Errorf("grpc server error: %w", err)
 		}
 
-		slog.Info("gRPC server stopped.")
 	})
 
 	wg.Go(func() {
+		defer slog.Info("HTTP server stopped.")
+
 		go func() {
 			<-ctx.Done()
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -160,16 +163,18 @@ func (r *Runner) Run(ctx context.Context) error {
 		if err != http.ErrServerClosed {
 			errChan <- fmt.Errorf("http server error: %w", err)
 		}
-
-		slog.Info("HTTP server stopped.")
 	})
 
 	select {
 	case <-termChan:
-		log.Println("Received termination signal, shutting down...")
+		log.Println("Received termination signal")
 	case err := <-errChan:
-		log.Printf("Received error: %v, shutting down...", err)
+		log.Printf("Received error: %v", err)
 	}
+
+	log.Println("Shutting down...")
+
+	cancel()
 
 	go func() {
 		for err := range errChan {
@@ -183,7 +188,6 @@ func (r *Runner) Run(ctx context.Context) error {
 		os.Exit(1)
 	}()
 
-	cancel()
 	wg.Wait()
 	log.Println("Shutdown complete.")
 
