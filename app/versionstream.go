@@ -18,7 +18,7 @@ func (a *App) RunVersionStream(ctx context.Context, source EventSource) error {
 	}
 
 	for event := range s {
-		slog.Info("Received event", "id", event.Id)
+		slog.Info("Received event", "id", event.Id, "name", event.DeploymentName, "version", event.Version, "deployedAt", event.DeployedAt)
 		// Process the event (e.g., update version info, trigger actions, etc.)
 	}
 	return nil

@@ -16,7 +16,7 @@ import (
 	deploymentpb "overseer/api-go/deployment/v1"
 	environmentpb "overseer/api-go/environment/v1"
 	"overseer/app"
-	"overseer/datasource"
+	"overseer/datasource/nomad"
 	"overseer/entrypoints"
 	"overseer/repo"
 	"sync"
@@ -110,7 +110,7 @@ func (r *Runner) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	nomadSource := datasource.NewNomadSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default().WithGroup("NomadSource"))
+	nomadSource := nomad.NewSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default().With("component", "nomad-source"))
 	// mockSource := &datasource.MockSource{}
 
 	wg := sync.WaitGroup{}
