@@ -108,8 +108,6 @@ func (n *Source) runStream(ctx context.Context, stream chan datasource.Event) er
 			return err
 		}
 
-		// n.logger.Info("received stream item", "index", streamItem.Index, "events", len(streamItem.Events))
-
 		for _, event := range streamItem.Events {
 			if event.Type != "JobRegistered" { // TODO: For now, only handle JobRegistered
 				continue
@@ -135,13 +133,7 @@ func (n *Source) runStream(ctx context.Context, stream chan datasource.Event) er
 						continue
 					}
 
-					var imageVersion string
-					lastColon := strings.LastIndex(config.Image, ":")
-					if lastColon != -1 && lastColon < len(config.Image)-1 {
-						imageVersion = config.Image[lastColon+1:]
-					} else {
-						imageVersion = ""
-					}
+					imageVersion := extractVersionFromImage(config.Image)
 
 					if imageVersion == "" || imageVersion == "latest" {
 						n.logger.Warn("could not determine image version", "image", config.Image)
@@ -150,7 +142,7 @@ func (n *Source) runStream(ctx context.Context, stream chan datasource.Event) er
 
 					stream <- datasource.Event{
 						Id:             event.Key,
-						DeploymentName: fmt.Sprintf("%s.%s.%s.%s", j.Namespace, j.Name, tg.Name, task.Name),
+						DeploymentName: buildDeploymentName(j.Namespace, j.Name, tg.Name, task.Name),
 						Version:        imageVersion,
 						DeployedAt:     time.Unix(0, j.SubmitTime),
 					}
@@ -158,6 +150,21 @@ func (n *Source) runStream(ctx context.Context, stream chan datasource.Event) er
 			}
 		}
 	}
+}
+
+func buildDeploymentName(namespace, jobName, taskGroupName, taskName string) string {
+	if namespace == "default" {
+		return strings.Join([]string{jobName, taskGroupName, taskName}, ".")
+	}
+	return strings.Join([]string{namespace, jobName, taskGroupName, taskName}, ".")
+}
+
+func extractVersionFromImage(image string) string {
+	lastColon := strings.LastIndex(image, ":")
+	if lastColon != -1 && lastColon < len(image)-1 {
+		return image[lastColon+1:]
+	}
+	return ""
 }
 
 func (n *Source) getNomadConnection(ctx context.Context) (io.ReadCloser, error) {
