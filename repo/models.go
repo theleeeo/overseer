@@ -17,7 +17,6 @@ type Application struct {
 type Deployment struct {
 	ID         pgtype.UUID        `json:"id"`
 	InstanceID int32              `json:"instance_id"`
-	Name       string             `json:"name"`
 	Version    string             `json:"version"`
 	DeployedAt pgtype.Timestamptz `json:"deployed_at"`
 }

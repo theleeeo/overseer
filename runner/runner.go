@@ -15,8 +15,9 @@ import (
 	applicationpb "overseer/api-go/application/v1"
 	deploymentpb "overseer/api-go/deployment/v1"
 	environmentpb "overseer/api-go/environment/v1"
+	instancepb "overseer/api-go/instance/v1"
 	"overseer/app"
-	"overseer/datasource/nomad"
+	"overseer/datasource"
 	"overseer/entrypoints"
 	"overseer/repo"
 	"sync"
@@ -94,6 +95,7 @@ func (r *Runner) Run(ctx context.Context) error {
 	applicationGrpc := entrypoints.NewApplicationServer(app)
 	environmentGrpc := entrypoints.NewEnvironmentServer(app)
 	deploymentGrpc := entrypoints.NewDeploymentServer(app)
+	instanceGrpc := entrypoints.NewInstanceServer(app)
 
 	grpcServer := grpc.NewServer(
 	// grpc.MaxRecvMsgSize(mb256),
@@ -106,17 +108,18 @@ func (r *Runner) Run(ctx context.Context) error {
 	applicationpb.RegisterApplicationServiceServer(grpcServer, applicationGrpc)
 	environmentpb.RegisterEnvironmentServiceServer(grpcServer, environmentGrpc)
 	deploymentpb.RegisterDeploymentServiceServer(grpcServer, deploymentGrpc)
+	instancepb.RegisterInstanceServiceServer(grpcServer, instanceGrpc)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	nomadSource := nomad.NewSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default())
-	// mockSource := &datasource.MockSource{}
+	// dataSource := nomad.NewSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default())
+	dataSource := &datasource.MockSource{}
 
 	wg := sync.WaitGroup{}
 
 	wg.Go(func() {
-		if err := app.RunVersionStream(ctx, nomadSource); err != nil {
+		if err := app.RunVersionStream(ctx, dataSource); err != nil {
 			errChan <- fmt.Errorf("version stream error: %w", err)
 		}
 

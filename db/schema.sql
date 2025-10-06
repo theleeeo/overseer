@@ -25,7 +25,6 @@ CREATE TABLE
   deployments (
     id UUID PRIMARY KEY,
     instance_id integer NOT NULL REFERENCES instances (id) ON DELETE CASCADE,
-    name text NOT NULL UNIQUE,
     version text NOT NULL,
     deployed_at timestamptz NOT NULL
   );

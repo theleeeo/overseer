@@ -16,6 +16,8 @@ service InstanceService {
 
   rpc Create(CreateRequest) returns (CreateResponse);
 
+  rpc Update(UpdateRequest) returns (UpdateResponse);
+
   rpc List(ListRequest) returns (ListResponse);
 }
 
@@ -35,6 +37,13 @@ message CreateRequest {
 }
 
 message CreateResponse { int32 id = 1; }
+
+message UpdateRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+message UpdateResponse {}
 
 message ListRequest { string name = 1; }
 

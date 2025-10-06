@@ -237,6 +237,94 @@ func (x *CreateResponse) GetId() int32 {
 	return 0
 }
 
+type UpdateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRequest) Reset() {
+	*x = UpdateRequest{}
+	mi := &file_instance_v1_instance_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRequest) ProtoMessage() {}
+
+func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_instance_v1_instance_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRequest) Descriptor() ([]byte, []int) {
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UpdateRequest) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type UpdateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateResponse) Reset() {
+	*x = UpdateResponse{}
+	mi := &file_instance_v1_instance_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateResponse) ProtoMessage() {}
+
+func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_instance_v1_instance_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateResponse) Descriptor() ([]byte, []int) {
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{5}
+}
+
 type ListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -246,7 +334,7 @@ type ListRequest struct {
 
 func (x *ListRequest) Reset() {
 	*x = ListRequest{}
-	mi := &file_instance_v1_instance_proto_msgTypes[4]
+	mi := &file_instance_v1_instance_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -258,7 +346,7 @@ func (x *ListRequest) String() string {
 func (*ListRequest) ProtoMessage() {}
 
 func (x *ListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_instance_v1_instance_proto_msgTypes[4]
+	mi := &file_instance_v1_instance_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -271,7 +359,7 @@ func (x *ListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRequest.ProtoReflect.Descriptor instead.
 func (*ListRequest) Descriptor() ([]byte, []int) {
-	return file_instance_v1_instance_proto_rawDescGZIP(), []int{4}
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListRequest) GetName() string {
@@ -291,7 +379,7 @@ type ListResponse struct {
 
 func (x *ListResponse) Reset() {
 	*x = ListResponse{}
-	mi := &file_instance_v1_instance_proto_msgTypes[5]
+	mi := &file_instance_v1_instance_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -303,7 +391,7 @@ func (x *ListResponse) String() string {
 func (*ListResponse) ProtoMessage() {}
 
 func (x *ListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_instance_v1_instance_proto_msgTypes[5]
+	mi := &file_instance_v1_instance_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -316,7 +404,7 @@ func (x *ListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResponse.ProtoReflect.Descriptor instead.
 func (*ListResponse) Descriptor() ([]byte, []int) {
-	return file_instance_v1_instance_proto_rawDescGZIP(), []int{5}
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListResponse) GetInstances() []*Instance {
@@ -350,16 +438,21 @@ const file_instance_v1_instance_proto_rawDesc = "" +
 	"\x0eapplication_id\x18\x02 \x01(\x05R\rapplicationId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\" \n" +
 	"\x0eCreateResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\"!\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\"3\n" +
+	"\rUpdateRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\x10\n" +
+	"\x0eUpdateResponse\"!\n" +
 	"\vListRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x84\x01\n" +
 	"\fListResponse\x123\n" +
 	"\tinstances\x18\x01 \x03(\v2\x15.instance.v1.InstanceR\tinstances\x12?\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1f.instance.v1.ResponsePaginationR\n" +
-	"pagination2\x91\x01\n" +
+	"pagination2\xd4\x01\n" +
 	"\x0fInstanceService\x12A\n" +
-	"\x06Create\x12\x1a.instance.v1.CreateRequest\x1a\x1b.instance.v1.CreateResponse\x12;\n" +
+	"\x06Create\x12\x1a.instance.v1.CreateRequest\x1a\x1b.instance.v1.CreateResponse\x12A\n" +
+	"\x06Update\x12\x1a.instance.v1.UpdateRequest\x1a\x1b.instance.v1.UpdateResponse\x12;\n" +
 	"\x04List\x12\x18.instance.v1.ListRequest\x1a\x19.instance.v1.ListResponseB\xa7\x01\n" +
 	"\x0fcom.instance.v1B\rInstanceProtoP\x01Z8github.com/theleeeo/overseer/api-go/instance/v1;instance\xa2\x02\x03IXX\xaa\x02\vInstance.V1\xca\x02\vInstance\\V1\xe2\x02\x17Instance\\V1\\GPBMetadata\xea\x02\fInstance::V1b\x06proto3"
 
@@ -375,24 +468,28 @@ func file_instance_v1_instance_proto_rawDescGZIP() []byte {
 	return file_instance_v1_instance_proto_rawDescData
 }
 
-var file_instance_v1_instance_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_instance_v1_instance_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_instance_v1_instance_proto_goTypes = []any{
 	(*Instance)(nil),           // 0: instance.v1.Instance
 	(*ResponsePagination)(nil), // 1: instance.v1.ResponsePagination
 	(*CreateRequest)(nil),      // 2: instance.v1.CreateRequest
 	(*CreateResponse)(nil),     // 3: instance.v1.CreateResponse
-	(*ListRequest)(nil),        // 4: instance.v1.ListRequest
-	(*ListResponse)(nil),       // 5: instance.v1.ListResponse
+	(*UpdateRequest)(nil),      // 4: instance.v1.UpdateRequest
+	(*UpdateResponse)(nil),     // 5: instance.v1.UpdateResponse
+	(*ListRequest)(nil),        // 6: instance.v1.ListRequest
+	(*ListResponse)(nil),       // 7: instance.v1.ListResponse
 }
 var file_instance_v1_instance_proto_depIdxs = []int32{
 	0, // 0: instance.v1.ListResponse.instances:type_name -> instance.v1.Instance
 	1, // 1: instance.v1.ListResponse.pagination:type_name -> instance.v1.ResponsePagination
 	2, // 2: instance.v1.InstanceService.Create:input_type -> instance.v1.CreateRequest
-	4, // 3: instance.v1.InstanceService.List:input_type -> instance.v1.ListRequest
-	3, // 4: instance.v1.InstanceService.Create:output_type -> instance.v1.CreateResponse
-	5, // 5: instance.v1.InstanceService.List:output_type -> instance.v1.ListResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
+	4, // 3: instance.v1.InstanceService.Update:input_type -> instance.v1.UpdateRequest
+	6, // 4: instance.v1.InstanceService.List:input_type -> instance.v1.ListRequest
+	3, // 5: instance.v1.InstanceService.Create:output_type -> instance.v1.CreateResponse
+	5, // 6: instance.v1.InstanceService.Update:output_type -> instance.v1.UpdateResponse
+	7, // 7: instance.v1.InstanceService.List:output_type -> instance.v1.ListResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -409,7 +506,7 @@ func file_instance_v1_instance_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_instance_v1_instance_proto_rawDesc), len(file_instance_v1_instance_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -9,6 +9,26 @@ import (
 	"context"
 )
 
+const createInstance = `-- name: CreateInstance :one
+INSERT INTO instances (environment_id, application_id, name)
+VALUES ($1, $2, $3)
+RETURNING id
+`
+
+type CreateInstanceParams struct {
+	EnvironmentID int32  `json:"environment_id"`
+	ApplicationID int32  `json:"application_id"`
+	Name          string `json:"name"`
+}
+
+// Create an instance
+func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createInstance, arg.EnvironmentID, arg.ApplicationID, arg.Name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const listInstances = `-- name: ListInstances :many
 SELECT
   id,
@@ -16,6 +36,7 @@ SELECT
   application_id,
   name
 FROM instances
+WHERE name = $1 OR $1 IS NULL
 `
 
 type ListInstancesRow struct {
@@ -25,8 +46,8 @@ type ListInstancesRow struct {
 	Name          string `json:"name"`
 }
 
-func (q *Queries) ListInstances(ctx context.Context) ([]ListInstancesRow, error) {
-	rows, err := q.db.Query(ctx, listInstances)
+func (q *Queries) ListInstances(ctx context.Context, name string) ([]ListInstancesRow, error) {
+	rows, err := q.db.Query(ctx, listInstances, name)
 	if err != nil {
 		return nil, err
 	}
@@ -50,23 +71,18 @@ func (q *Queries) ListInstances(ctx context.Context) ([]ListInstancesRow, error)
 	return items, nil
 }
 
-const upsertInstance = `-- name: UpsertInstance :exec
-INSERT INTO instances (environment_id, application_id, name)
-VALUES ($1, $2, $3)
-ON CONFLICT (instance_id)
-DO UPDATE
-SET 
-  name = EXCLUDED.name
+const updateInstance = `-- name: UpdateInstance :exec
+UPDATE instances
+SET name = $2
+WHERE id = $1
 `
 
-type UpsertInstanceParams struct {
-	EnvironmentID int32  `json:"environment_id"`
-	ApplicationID int32  `json:"application_id"`
-	Name          string `json:"name"`
+type UpdateInstanceParams struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
 }
 
-// Upsert an instance
-func (q *Queries) UpsertInstance(ctx context.Context, arg UpsertInstanceParams) error {
-	_, err := q.db.Exec(ctx, upsertInstance, arg.EnvironmentID, arg.ApplicationID, arg.Name)
+func (q *Queries) UpdateInstance(ctx context.Context, arg UpdateInstanceParams) error {
+	_, err := q.db.Exec(ctx, updateInstance, arg.ID, arg.Name)
 	return err
 }

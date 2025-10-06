@@ -6,6 +6,7 @@ import (
 	"overseer/repo"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -29,7 +30,7 @@ type Instance struct {
 }
 
 type Deployment struct {
-	InstanceId int32     `json:instance_id"`
+	InstanceId int32     `json:"instance_id"`
 	Version    string    `json:"version"`
 	DeployedAt time.Time `json:"deployed_at"`
 }
@@ -156,12 +157,58 @@ func (a *App) ReorderEnvironments(ctx context.Context, ids []int32) error {
 	return nil
 }
 
+type CreateInstanceParameters struct {
+	EnvironmentId int32
+	ApplicationId int32
+	Name          string
+}
+
+func (a *App) CreateInstance(ctx context.Context, params CreateInstanceParameters) (int32, error) {
+	if params.EnvironmentId == 0 {
+		return 0, errors.New("environment id is required")
+	}
+
+	if params.ApplicationId == 0 {
+		return 0, errors.New("application id is required")
+	}
+
+	if params.Name == "" {
+		return 0, errors.New("name is required")
+	}
+
+	return a.db.CreateInstance(ctx, repo.CreateInstanceParams{
+		EnvironmentID: params.EnvironmentId,
+		ApplicationID: params.ApplicationId,
+		Name:          params.Name,
+	})
+}
+
+type UpdateInstanceParameters struct {
+	Id   int32
+	Name string
+}
+
+func (a *App) UpdateInstance(ctx context.Context, params UpdateInstanceParameters) error {
+	if params.Id == 0 {
+		return errors.New("instance id is required")
+	}
+
+	if params.Name == "" {
+		return errors.New("name is required")
+	}
+
+	return a.db.UpdateInstance(ctx, repo.UpdateInstanceParams{
+		ID:   params.Id,
+		Name: params.Name,
+	})
+}
+
 type ListInstancesParameters struct {
 	Name string
 }
 
 func (a *App) ListInstances(ctx context.Context, params ListInstancesParameters) ([]Instance, error) {
-	instances, err := a.db.ListInstances(ctx)
+	instances, err := a.db.ListInstances(ctx, params.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -218,9 +265,10 @@ func (a *App) RegisterDeployment(ctx context.Context, params RegisterDeploymentP
 		params.DeployedAt = time.Now().UTC()
 	}
 
-	return a.db.UpsertDeployment(ctx, repo.UpsertDeploymentParams{
+	return a.db.RegisterDeployment(ctx, repo.RegisterDeploymentParams{
+		ID:         pgtype.UUID{Bytes: uuid.New(), Valid: true},
 		InstanceID: params.InstanceId,
 		Version:    params.Version,
-		DeployedAt: pgtype.Timestamptz{Time: params.DeployedAt},
+		DeployedAt: pgtype.Timestamptz{Time: params.DeployedAt, Valid: true},
 	})
 }

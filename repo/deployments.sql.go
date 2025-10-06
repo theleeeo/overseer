@@ -45,23 +45,25 @@ func (q *Queries) ListDeployments(ctx context.Context) ([]ListDeploymentsRow, er
 	return items, nil
 }
 
-const upsertDeployment = `-- name: UpsertDeployment :exec
-INSERT INTO deployments (instance_id, version, deployed_at)
-VALUES ($1, $2, $3)
-ON CONFLICT (environment_id, application_id)
-DO UPDATE
-SET version = EXCLUDED.version,
-    deployed_at = EXCLUDED.deployed_at
+const registerDeployment = `-- name: RegisterDeployment :exec
+INSERT INTO deployments (id, instance_id, version, deployed_at)
+VALUES ($1, $2, $3, $4)
 `
 
-type UpsertDeploymentParams struct {
+type RegisterDeploymentParams struct {
+	ID         pgtype.UUID        `json:"id"`
 	InstanceID int32              `json:"instance_id"`
 	Version    string             `json:"version"`
 	DeployedAt pgtype.Timestamptz `json:"deployed_at"`
 }
 
-// Upsert a deployment (create or update version/timestamp)
-func (q *Queries) UpsertDeployment(ctx context.Context, arg UpsertDeploymentParams) error {
-	_, err := q.db.Exec(ctx, upsertDeployment, arg.InstanceID, arg.Version, arg.DeployedAt)
+// Register a deployment
+func (q *Queries) RegisterDeployment(ctx context.Context, arg RegisterDeploymentParams) error {
+	_, err := q.db.Exec(ctx, registerDeployment,
+		arg.ID,
+		arg.InstanceID,
+		arg.Version,
+		arg.DeployedAt,
+	)
 	return err
 }
