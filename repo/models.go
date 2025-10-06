@@ -15,14 +15,22 @@ type Application struct {
 }
 
 type Deployment struct {
-	EnvironmentID int32              `json:"environment_id"`
-	ApplicationID int32              `json:"application_id"`
-	Version       string             `json:"version"`
-	DeployedAt    pgtype.Timestamptz `json:"deployed_at"`
+	ID         pgtype.UUID        `json:"id"`
+	InstanceID int32              `json:"instance_id"`
+	Name       string             `json:"name"`
+	Version    string             `json:"version"`
+	DeployedAt pgtype.Timestamptz `json:"deployed_at"`
 }
 
 type Environment struct {
 	ID        int32  `json:"id"`
 	Name      string `json:"name"`
 	SortOrder int32  `json:"sort_order"`
+}
+
+type Instance struct {
+	ID            int32  `json:"id"`
+	Name          string `json:"name"`
+	EnvironmentID int32  `json:"environment_id"`
+	ApplicationID int32  `json:"application_id"`
 }

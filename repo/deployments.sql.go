@@ -7,32 +7,34 @@ package repo
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listDeploymentsFlat = `-- name: ListDeploymentsFlat :many
+const listDeployments = `-- name: ListDeployments :many
 SELECT
-  environment_id,
-  application_id,
+  instance_id,
   version,
   deployed_at
 FROM deployments
 `
 
-func (q *Queries) ListDeploymentsFlat(ctx context.Context) ([]Deployment, error) {
-	rows, err := q.db.Query(ctx, listDeploymentsFlat)
+type ListDeploymentsRow struct {
+	InstanceID int32              `json:"instance_id"`
+	Version    string             `json:"version"`
+	DeployedAt pgtype.Timestamptz `json:"deployed_at"`
+}
+
+func (q *Queries) ListDeployments(ctx context.Context) ([]ListDeploymentsRow, error) {
+	rows, err := q.db.Query(ctx, listDeployments)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Deployment
+	var items []ListDeploymentsRow
 	for rows.Next() {
-		var i Deployment
-		if err := rows.Scan(
-			&i.EnvironmentID,
-			&i.ApplicationID,
-			&i.Version,
-			&i.DeployedAt,
-		); err != nil {
+		var i ListDeploymentsRow
+		if err := rows.Scan(&i.InstanceID, &i.Version, &i.DeployedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -43,37 +45,23 @@ func (q *Queries) ListDeploymentsFlat(ctx context.Context) ([]Deployment, error)
 	return items, nil
 }
 
-const upsertDeployment = `-- name: UpsertDeployment :one
-INSERT INTO deployments (environment_id, application_id, version, deployed_at)
-VALUES ($1, $2, $3, COALESCE($4, now()))
+const upsertDeployment = `-- name: UpsertDeployment :exec
+INSERT INTO deployments (instance_id, version, deployed_at)
+VALUES ($1, $2, $3)
 ON CONFLICT (environment_id, application_id)
 DO UPDATE
 SET version = EXCLUDED.version,
     deployed_at = EXCLUDED.deployed_at
-RETURNING environment_id, application_id, version, deployed_at
 `
 
 type UpsertDeploymentParams struct {
-	EnvironmentID int32       `json:"environment_id"`
-	ApplicationID int32       `json:"application_id"`
-	Version       string      `json:"version"`
-	Column4       interface{} `json:"column_4"`
+	InstanceID int32              `json:"instance_id"`
+	Version    string             `json:"version"`
+	DeployedAt pgtype.Timestamptz `json:"deployed_at"`
 }
 
 // Upsert a deployment (create or update version/timestamp)
-func (q *Queries) UpsertDeployment(ctx context.Context, arg UpsertDeploymentParams) (Deployment, error) {
-	row := q.db.QueryRow(ctx, upsertDeployment,
-		arg.EnvironmentID,
-		arg.ApplicationID,
-		arg.Version,
-		arg.Column4,
-	)
-	var i Deployment
-	err := row.Scan(
-		&i.EnvironmentID,
-		&i.ApplicationID,
-		&i.Version,
-		&i.DeployedAt,
-	)
-	return i, err
+func (q *Queries) UpsertDeployment(ctx context.Context, arg UpsertDeploymentParams) error {
+	_, err := q.db.Exec(ctx, upsertDeployment, arg.InstanceID, arg.Version, arg.DeployedAt)
+	return err
 }

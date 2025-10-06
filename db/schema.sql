@@ -13,10 +13,19 @@ CREATE TABLE
   );
 
 CREATE TABLE
-  deployments (
+  instances (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text NOT NULL UNIQUE,
     environment_id integer NOT NULL REFERENCES environments (id) ON DELETE CASCADE,
     application_id integer NOT NULL REFERENCES applications (id) ON DELETE CASCADE,
+    UNIQUE (environment_id, application_id)
+  );
+
+CREATE TABLE
+  deployments (
+    id UUID PRIMARY KEY,
+    instance_id integer NOT NULL REFERENCES instances (id) ON DELETE CASCADE,
+    name text NOT NULL UNIQUE,
     version text NOT NULL,
-    deployed_at timestamptz NOT NULL DEFAULT now (),
-    PRIMARY KEY (environment_id, application_id)
+    deployed_at timestamptz NOT NULL
   );

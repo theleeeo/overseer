@@ -20,7 +20,7 @@ func NewDeploymentServer(app *app.App) deploymentpb.DeploymentServiceServer {
 
 // List implements deployment.DeploymentServiceServer.
 func (d *DeploymentServer) List(ctx context.Context, req *deploymentpb.ListRequest) (*deploymentpb.ListResponse, error) {
-	resp, err := d.app.ListDeployments(ctx)
+	resp, err := d.app.ListDeployments(ctx, app.ListDeploymentsParameters{})
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +28,9 @@ func (d *DeploymentServer) List(ctx context.Context, req *deploymentpb.ListReque
 	var pbDeployments []*deploymentpb.Deployment
 	for _, dep := range resp {
 		pbDeployments = append(pbDeployments, &deploymentpb.Deployment{
-			EnvironmentId: int32(dep.EnvironmentId),
-			ApplicationId: int32(dep.ApplicationId),
-			Version:       dep.Version,
-			DeployedAt:    timestamppb.New(dep.DeployedAt),
+			InstanceId: dep.InstanceId,
+			Version:    dep.Version,
+			DeployedAt: timestamppb.New(dep.DeployedAt),
 		})
 	}
 
@@ -45,9 +44,8 @@ func (d *DeploymentServer) List(ctx context.Context, req *deploymentpb.ListReque
 
 func (d *DeploymentServer) Register(ctx context.Context, req *deploymentpb.RegisterRequest) (*deploymentpb.RegisterResponse, error) {
 	params := app.RegisterDeploymentParams{
-		EnvironmentId: int(req.EnvironmentId),
-		ApplicationId: int(req.ApplicationId),
-		Version:       req.Version,
+		InstanceId: req.InstanceId,
+		Version:    req.Version,
 	}
 
 	if req.DeployedAt != nil {

@@ -71,7 +71,7 @@ func (e *EnvironmentServer) Update(ctx context.Context, req *environmentpb.Updat
 		return &environmentpb.UpdateResponse{}, nil
 	}
 
-	_, err := e.app.UpdateEnvironment(ctx, int(req.Id), *req.Name)
+	_, err := e.app.UpdateEnvironment(ctx, req.Id, *req.Name)
 	if err != nil {
 		return nil, err
 	}

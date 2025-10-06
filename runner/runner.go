@@ -110,7 +110,7 @@ func (r *Runner) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	nomadSource := nomad.NewSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default().With("component", "nomad-source"))
+	nomadSource := nomad.NewSource("http://rock-srv-1.local:4646", "your-nomad-token", slog.Default())
 	// mockSource := &datasource.MockSource{}
 
 	wg := sync.WaitGroup{}

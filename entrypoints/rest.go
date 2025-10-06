@@ -62,7 +62,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 			return
 		}
 
-		updatedAppResult, err := a.UpdateApplication(r.Context(), id, updatedApp.Name)
+		updatedAppResult, err := a.UpdateApplication(r.Context(), int32(id), updatedApp.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -100,7 +100,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 			return
 		}
 
-		if err := a.DeleteApplication(r.Context(), id); err != nil {
+		if err := a.DeleteApplication(r.Context(), int32(id)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -161,7 +161,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 			return
 		}
 
-		updatedEnvResult, err := a.UpdateEnvironment(r.Context(), id, updatedEnv.Name)
+		updatedEnvResult, err := a.UpdateEnvironment(r.Context(), int32(id), updatedEnv.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -199,7 +199,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 			return
 		}
 
-		if err := a.DeleteEnvironment(r.Context(), id); err != nil {
+		if err := a.DeleteEnvironment(r.Context(), int32(id)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -209,7 +209,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 
 	// Should return a json where the root keys are environment names and the environment-objects have their keys being application names and their values being the corresponding AppInstance objects.
 	mux.HandleFunc("GET /deployments", func(w http.ResponseWriter, r *http.Request) {
-		deployments, err := a.ListDeployments(r.Context())
+		deployments, err := a.ListDeployments(r.Context(), app.ListDeploymentsParameters{})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

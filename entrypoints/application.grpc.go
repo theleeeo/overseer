@@ -71,7 +71,7 @@ func (e *ApplicationServer) Update(ctx context.Context, req *applicationpb.Updat
 		return &applicationpb.UpdateResponse{}, nil
 	}
 
-	_, err := e.app.UpdateApplication(ctx, int(req.Id), *req.Name)
+	_, err := e.app.UpdateApplication(ctx, req.Id, *req.Name)
 	if err != nil {
 		return nil, err
 	}

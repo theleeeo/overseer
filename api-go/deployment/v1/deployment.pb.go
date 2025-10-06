@@ -24,10 +24,9 @@ const (
 
 type Deployment struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EnvironmentId int32                  `protobuf:"varint,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
-	ApplicationId int32                  `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	Version       string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
-	DeployedAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=deployed_at,json=deployedAt,proto3" json:"deployed_at,omitempty"`
+	InstanceId    int32                  `protobuf:"varint,1,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	DeployedAt    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=deployed_at,json=deployedAt,proto3" json:"deployed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -62,16 +61,9 @@ func (*Deployment) Descriptor() ([]byte, []int) {
 	return file_deployment_v1_deployment_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Deployment) GetEnvironmentId() int32 {
+func (x *Deployment) GetInstanceId() int32 {
 	if x != nil {
-		return x.EnvironmentId
-	}
-	return 0
-}
-
-func (x *Deployment) GetApplicationId() int32 {
-	if x != nil {
-		return x.ApplicationId
+		return x.InstanceId
 	}
 	return 0
 }
@@ -135,11 +127,12 @@ func (x *ResponsePagination) GetTotal() int32 {
 }
 
 type RegisterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EnvironmentId int32                  `protobuf:"varint,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
-	ApplicationId int32                  `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	Version       string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
-	DeployedAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=deployed_at,json=deployedAt,proto3" json:"deployed_at,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// TODO: Instance Selector? Allowing it to be selected using name, id or
+	// env-app combo.
+	InstanceId    int32                  `protobuf:"varint,1,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	DeployedAt    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=deployed_at,json=deployedAt,proto3" json:"deployed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -174,16 +167,9 @@ func (*RegisterRequest) Descriptor() ([]byte, []int) {
 	return file_deployment_v1_deployment_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RegisterRequest) GetEnvironmentId() int32 {
+func (x *RegisterRequest) GetInstanceId() int32 {
 	if x != nil {
-		return x.EnvironmentId
-	}
-	return 0
-}
-
-func (x *RegisterRequest) GetApplicationId() int32 {
-	if x != nil {
-		return x.ApplicationId
+		return x.InstanceId
 	}
 	return 0
 }
@@ -330,21 +316,21 @@ var File_deployment_v1_deployment_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_deployment_proto_rawDesc = "" +
 	"\n" +
-	"\x1edeployment/v1/deployment.proto\x12\rdeployment.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb1\x01\n" +
+	"\x1edeployment/v1/deployment.proto\x12\rdeployment.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x84\x01\n" +
 	"\n" +
-	"Deployment\x12%\n" +
-	"\x0eenvironment_id\x18\x01 \x01(\x05R\renvironmentId\x12%\n" +
-	"\x0eapplication_id\x18\x02 \x01(\x05R\rapplicationId\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\x12;\n" +
-	"\vdeployed_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"Deployment\x12\x1f\n" +
+	"\vinstance_id\x18\x01 \x01(\x05R\n" +
+	"instanceId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x12;\n" +
+	"\vdeployed_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"deployedAt\"*\n" +
 	"\x12ResponsePagination\x12\x14\n" +
-	"\x05total\x18\x01 \x01(\x05R\x05total\"\xb6\x01\n" +
-	"\x0fRegisterRequest\x12%\n" +
-	"\x0eenvironment_id\x18\x01 \x01(\x05R\renvironmentId\x12%\n" +
-	"\x0eapplication_id\x18\x02 \x01(\x05R\rapplicationId\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\x12;\n" +
-	"\vdeployed_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\"\x89\x01\n" +
+	"\x0fRegisterRequest\x12\x1f\n" +
+	"\vinstance_id\x18\x01 \x01(\x05R\n" +
+	"instanceId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x12;\n" +
+	"\vdeployed_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"deployedAt\"\x12\n" +
 	"\x10RegisterResponse\"\r\n" +
 	"\vListRequest\"\x8e\x01\n" +

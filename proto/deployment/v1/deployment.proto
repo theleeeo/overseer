@@ -7,10 +7,9 @@ option go_package = "github.com/theleeeo/overseer/api-go/deployment/v1;deploymen
 import "google/protobuf/timestamp.proto";
 
 message Deployment {
-  int32 environment_id = 1;
-  int32 application_id = 2;
-  string version = 3;
-  google.protobuf.Timestamp deployed_at = 4;
+  int32 instance_id = 1;
+  string version = 2;
+  google.protobuf.Timestamp deployed_at = 3;
 }
 
 service DeploymentService {
@@ -31,15 +30,19 @@ message ResponsePagination { int32 total = 1; }
 // message GetResponse { Deployment deployment = 1; }
 
 message RegisterRequest {
-  int32 environment_id = 1;
-  int32 application_id = 2;
-  string version = 3;
-  google.protobuf.Timestamp deployed_at = 4;
+  // TODO: Instance Selector? Allowing it to be selected using name, id or
+  // env-app combo.
+  int32 instance_id = 1;
+  string version = 2;
+  google.protobuf.Timestamp deployed_at = 3;
 }
 
 message RegisterResponse {}
 
-message ListRequest {}
+message ListRequest {
+  // TODO: InstanceSelector
+  // int32 instance_id = 1;
+}
 
 message ListResponse {
   repeated Deployment deployments = 1;

@@ -5,25 +5,33 @@ import (
 	"errors"
 	"overseer/repo"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Environment struct {
-	Id    int    `json:"id"`
+	Id    int32  `json:"id"`
 	Name  string `json:"name"`
-	Order int    `json:"order"`
+	Order int32  `json:"order"`
 }
 
 type Application struct {
-	Id    int    `json:"id"`
+	Id    int32  `json:"id"`
 	Name  string `json:"name"`
-	Order int    `json:"order"`
+	Order int32  `json:"order"`
+}
+
+type Instance struct {
+	Id            int32  `json:"id"`
+	EnvironmentId int32  `json:"environment_id"`
+	ApplicationId int32  `json:"application_id"`
+	Name          string `json:"name"`
 }
 
 type Deployment struct {
-	EnvironmentId int       `json:"environment_id"`
-	ApplicationId int       `json:"application_id"`
-	Version       string    `json:"version"`
-	DeployedAt    time.Time `json:"deployed_at"`
+	InstanceId int32     `json:instance_id"`
+	Version    string    `json:"version"`
+	DeployedAt time.Time `json:"deployed_at"`
 }
 
 type App struct {
@@ -43,9 +51,9 @@ func (a *App) ListApplications(ctx context.Context) ([]Application, error) {
 	var result []Application
 	for _, app := range apps {
 		result = append(result, Application{
-			Id:    int(app.ID),
+			Id:    app.ID,
 			Name:  app.Name,
-			Order: int(app.SortOrder),
+			Order: app.SortOrder,
 		})
 	}
 
@@ -58,29 +66,29 @@ func (a *App) CreateApplication(ctx context.Context, name string) (Application, 
 		return Application{}, err
 	}
 	return Application{
-		Id:    int(app.ID),
+		Id:    app.ID,
 		Name:  app.Name,
-		Order: int(app.SortOrder),
+		Order: app.SortOrder,
 	}, nil
 }
 
-func (a *App) UpdateApplication(ctx context.Context, id int, name string) (Application, error) {
+func (a *App) UpdateApplication(ctx context.Context, id int32, name string) (Application, error) {
 	app, err := a.db.UpdateApplication(ctx, repo.UpdateApplicationParams{
-		ID:   int32(id),
+		ID:   id,
 		Name: name,
 	})
 	if err != nil {
 		return Application{}, err
 	}
 	return Application{
-		Id:    int(app.ID),
+		Id:    app.ID,
 		Name:  app.Name,
-		Order: int(app.SortOrder),
+		Order: app.SortOrder,
 	}, nil
 }
 
-func (a *App) DeleteApplication(ctx context.Context, id int) error {
-	return a.db.DeleteApplication(ctx, int32(id))
+func (a *App) DeleteApplication(ctx context.Context, id int32) error {
+	return a.db.DeleteApplication(ctx, id)
 }
 
 func (a *App) ReorderApplications(ctx context.Context, ids []int32) error {
@@ -100,9 +108,9 @@ func (a *App) ListEnvironments(ctx context.Context) ([]Environment, error) {
 	var result []Environment
 	for _, env := range envs {
 		result = append(result, Environment{
-			Id:    int(env.ID),
+			Id:    env.ID,
 			Name:  env.Name,
-			Order: int(env.SortOrder),
+			Order: env.SortOrder,
 		})
 	}
 
@@ -115,29 +123,29 @@ func (a *App) CreateEnvironment(ctx context.Context, name string) (Environment, 
 		return Environment{}, err
 	}
 	return Environment{
-		Id:    int(env.ID),
+		Id:    env.ID,
 		Name:  env.Name,
-		Order: int(env.SortOrder),
+		Order: env.SortOrder,
 	}, nil
 }
 
-func (a *App) UpdateEnvironment(ctx context.Context, id int, name string) (Environment, error) {
+func (a *App) UpdateEnvironment(ctx context.Context, id int32, name string) (Environment, error) {
 	env, err := a.db.UpdateEnvironment(ctx, repo.UpdateEnvironmentParams{
-		ID:   int32(id),
+		ID:   id,
 		Name: name,
 	})
 	if err != nil {
 		return Environment{}, err
 	}
 	return Environment{
-		Id:    int(env.ID),
+		Id:    env.ID,
 		Name:  env.Name,
-		Order: int(env.SortOrder),
+		Order: env.SortOrder,
 	}, nil
 }
 
-func (a *App) DeleteEnvironment(ctx context.Context, id int) error {
-	return a.db.DeleteEnvironment(ctx, int32(id))
+func (a *App) DeleteEnvironment(ctx context.Context, id int32) error {
+	return a.db.DeleteEnvironment(ctx, id)
 }
 
 func (a *App) ReorderEnvironments(ctx context.Context, ids []int32) error {
@@ -148,8 +156,33 @@ func (a *App) ReorderEnvironments(ctx context.Context, ids []int32) error {
 	return nil
 }
 
-func (a *App) ListDeployments(ctx context.Context) ([]Deployment, error) {
-	deployments, err := a.db.ListDeploymentsFlat(ctx)
+type ListInstancesParameters struct {
+	Name string
+}
+
+func (a *App) ListInstances(ctx context.Context, params ListInstancesParameters) ([]Instance, error) {
+	instances, err := a.db.ListInstances(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []Instance
+	for _, i := range instances {
+		result = append(result, Instance{
+			Id:            i.ID,
+			EnvironmentId: i.EnvironmentID,
+			ApplicationId: i.ApplicationID,
+			Name:          i.Name,
+		})
+	}
+
+	return result, nil
+}
+
+type ListDeploymentsParameters struct{}
+
+func (a *App) ListDeployments(ctx context.Context, params ListDeploymentsParameters) ([]Deployment, error) {
+	deployments, err := a.db.ListDeployments(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -157,10 +190,9 @@ func (a *App) ListDeployments(ctx context.Context) ([]Deployment, error) {
 	var result []Deployment
 	for _, d := range deployments {
 		result = append(result, Deployment{
-			EnvironmentId: int(d.EnvironmentID),
-			ApplicationId: int(d.ApplicationID),
-			Version:       d.Version,
-			DeployedAt:    d.DeployedAt.Time,
+			InstanceId: d.InstanceID,
+			Version:    d.Version,
+			DeployedAt: d.DeployedAt.Time,
 		})
 	}
 
@@ -168,19 +200,14 @@ func (a *App) ListDeployments(ctx context.Context) ([]Deployment, error) {
 }
 
 type RegisterDeploymentParams struct {
-	EnvironmentId int
-	ApplicationId int
-	Version       string
-	DeployedAt    time.Time
+	InstanceId int32
+	Version    string
+	DeployedAt time.Time
 }
 
 func (a *App) RegisterDeployment(ctx context.Context, params RegisterDeploymentParams) error {
-	if params.EnvironmentId == 0 {
-		return errors.New("environment id is required")
-	}
-
-	if params.ApplicationId == 0 {
-		return errors.New("application id is required")
+	if params.InstanceId == 0 {
+		return errors.New("instance id is required")
 	}
 
 	if params.Version == "" {
@@ -191,11 +218,9 @@ func (a *App) RegisterDeployment(ctx context.Context, params RegisterDeploymentP
 		params.DeployedAt = time.Now().UTC()
 	}
 
-	_, err := a.db.UpsertDeployment(ctx, repo.UpsertDeploymentParams{
-		EnvironmentID: int32(params.EnvironmentId),
-		ApplicationID: int32(params.ApplicationId),
-		Version:       params.Version,
-		Column4:       params.DeployedAt,
+	return a.db.UpsertDeployment(ctx, repo.UpsertDeploymentParams{
+		InstanceID: params.InstanceId,
+		Version:    params.Version,
+		DeployedAt: pgtype.Timestamptz{Time: params.DeployedAt},
 	})
-	return err
 }
