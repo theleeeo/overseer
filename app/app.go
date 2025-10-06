@@ -226,6 +226,42 @@ func (a *App) ListInstances(ctx context.Context, params ListInstancesParameters)
 	return result, nil
 }
 
+type InstanceAndDeploymentResult struct {
+	Instance   Instance    `json:"instance"`
+	Deployment *Deployment `json:"deployment,omitempty"`
+}
+
+func (a *App) ListInstancesAndDeployment(ctx context.Context) ([]InstanceAndDeploymentResult, error) {
+	rows, err := a.db.ListInstancesAndDeployment(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []InstanceAndDeploymentResult
+	for _, r := range rows {
+		result = append(result, InstanceAndDeploymentResult{
+			Instance: Instance{
+				Id:            r.ID,
+				EnvironmentId: r.EnvironmentID,
+				ApplicationId: r.ApplicationID,
+				Name:          r.Name,
+			},
+			Deployment: func() *Deployment {
+				if r.DeployedAt.Valid {
+					return &Deployment{
+						InstanceId: r.ID,
+						Version:    r.Version.String,
+						DeployedAt: r.DeployedAt.Time,
+					}
+				}
+				return nil
+			}(),
+		})
+	}
+
+	return result, nil
+}
+
 type ListDeploymentsParameters struct{}
 
 func (a *App) ListDeployments(ctx context.Context, params ListDeploymentsParameters) ([]Deployment, error) {

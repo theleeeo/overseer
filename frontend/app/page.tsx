@@ -31,10 +31,14 @@ interface Environment {
 }
 
 interface VersionCell {
-  environment_id: string;
-  application_id: string;
-  version: string;
-  deployed_at: string;
+  instance: {
+    environment_id: string;
+    application_id: string;
+  };
+  deployment?: {
+    version: string;
+    deployed_at: string;
+  };
 }
 
 interface LatestVersion {
@@ -135,12 +139,18 @@ export default function VersionDashboard() {
 
     // Fill in actual version data where it exists
     versionCells
-      .filter((cell) => cell.application_id === app.id)
+      .filter((cell) => cell.instance.application_id === app.id)
       .forEach((cell) => {
-        versions[cell.environment_id] = {
-          version: cell.version,
-          deployedAt: cell.deployed_at,
-        };
+        if (cell.deployment) {
+          versions[cell.instance.environment_id] = {
+            version: cell.deployment.version,
+            deployedAt: cell.deployment.deployed_at,
+          };
+        } else {
+          versions[cell.instance.environment_id] = {
+            version: "not deployed",
+          };
+        }
       });
 
     // Find latest version for this app

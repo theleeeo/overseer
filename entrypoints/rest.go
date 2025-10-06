@@ -208,15 +208,15 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 	})
 
 	// Should return a json where the root keys are environment names and the environment-objects have their keys being application names and their values being the corresponding AppInstance objects.
-	mux.HandleFunc("GET /deployments", func(w http.ResponseWriter, r *http.Request) {
-		deployments, err := a.ListDeployments(r.Context(), app.ListDeploymentsParameters{})
+	mux.HandleFunc("GET /instances", func(w http.ResponseWriter, r *http.Request) {
+		instances, err := a.ListInstancesAndDeployment(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		jsonData, err := json.Marshal(deployments)
+		jsonData, err := json.Marshal(instances)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

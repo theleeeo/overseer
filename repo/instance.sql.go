@@ -7,6 +7,8 @@ package repo
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createInstance = `-- name: CreateInstance :one
@@ -36,7 +38,7 @@ SELECT
   application_id,
   name
 FROM instances
-WHERE name = $1 OR $1 IS NULL
+WHERE name = $1 OR $1=''
 `
 
 type ListInstancesRow struct {
@@ -60,6 +62,58 @@ func (q *Queries) ListInstances(ctx context.Context, name string) ([]ListInstanc
 			&i.EnvironmentID,
 			&i.ApplicationID,
 			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listInstancesAndDeployment = `-- name: ListInstancesAndDeployment :many
+
+SELECT
+  i.id,
+  i.environment_id,
+  i.application_id,
+  i.name,
+  d.version,
+  d.deployed_at
+FROM instances i
+LEFT JOIN deployments d ON i.id = d.instance_id
+  AND d.deployed_at = (SELECT MAX(deployed_at) FROM deployments WHERE instance_id = i.id)
+`
+
+type ListInstancesAndDeploymentRow struct {
+	ID            int32              `json:"id"`
+	EnvironmentID int32              `json:"environment_id"`
+	ApplicationID int32              `json:"application_id"`
+	Name          string             `json:"name"`
+	Version       pgtype.Text        `json:"version"`
+	DeployedAt    pgtype.Timestamptz `json:"deployed_at"`
+}
+
+// filter by name if provided
+// List instances along with their latest deployments
+func (q *Queries) ListInstancesAndDeployment(ctx context.Context) ([]ListInstancesAndDeploymentRow, error) {
+	rows, err := q.db.Query(ctx, listInstancesAndDeployment)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListInstancesAndDeploymentRow
+	for rows.Next() {
+		var i ListInstancesAndDeploymentRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EnvironmentID,
+			&i.ApplicationID,
+			&i.Name,
+			&i.Version,
+			&i.DeployedAt,
 		); err != nil {
 			return nil, err
 		}
