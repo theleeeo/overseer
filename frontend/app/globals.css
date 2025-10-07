@@ -1,89 +1,107 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Remove Tailwind v4 custom directives and variants for v3 compatibility */
 
+/* Tailwind v3-friendly color tokens: space-separated HSL triples (no hsl()/alpha here) */
 :root {
-  /* Color tokens for Tailwind v3 */
-  --background: #fff;
-  --foreground: #374151;
-  --card: #f0fdf4;
-  --card-foreground: #374151;
-  --popover: #fff;
-  --popover-foreground: #374151;
-  --primary: #15803d;
-  --primary-foreground: #fff;
-  --secondary: #f0fdf4;
-  --secondary-foreground: #374151;
-  --muted: #f0fdf4;
-  --muted-foreground: #374151;
-  --accent: #166534;
-  --accent-foreground: #374151;
-  --destructive: #dc2626;
-  --destructive-foreground: #fff;
-  --border: #e5e7eb;
-  --input: #f0fdf4;
-  --ring: #22c55e;
-  --chart-1: #15803d;
-  --chart-2: #f59e42;
-  --chart-3: #dc2626;
-  --chart-4: #ea580c;
-  --chart-5: #22c55e;
+  --background: 0 0% 100%;
+  --foreground: 216.9 19.1% 26.7%;
+
+  --card: 138.5 76.5% 96.7%;
+  --card-foreground: 216.9 19.1% 26.7%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 216.9 19.1% 26.7%;
+
+  --primary: 142.4 71.8% 29.2%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 138.5 76.5% 96.7%;
+  --secondary-foreground: 216.9 19.1% 26.7%;
+
+  --muted: 138.5 76.5% 96.7%;
+  --muted-foreground: 216.9 19.1% 26.7%;
+
+  --accent: 142.8 64.2% 24.1%;
+  --accent-foreground: 216.9 19.1% 26.7%;
+
+  --destructive: 0 72.2% 50.6%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 13% 91%;
+  --input: 138.5 76.5% 96.7%;
+  --ring: 142.1 70.6% 45.3%;
+
+  --chart-1: 142.4 71.8% 29.2%;
+  --chart-2: 30.8 89.9% 61%;
+  --chart-3: 0 72.2% 50.6%;
+  --chart-4: 20.5 90.2% 48.2%;
+  --chart-5: 142.1 70.6% 45.3%;
+
   --radius: 0.5rem;
-  --sidebar: #f0fdf4;
-  --sidebar-foreground: #374151;
-  --sidebar-primary: #15803d;
-  --sidebar-primary-foreground: #fff;
-  --sidebar-accent: #22c55e;
-  --sidebar-accent-foreground: #374151;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #22c55e;
+
+  --sidebar: 138.5 76.5% 96.7%;
+  --sidebar-foreground: 216.9 19.1% 26.7%;
+  --sidebar-primary: 142.4 71.8% 29.2%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 142.1 70.6% 45.3%;
+  --sidebar-accent-foreground: 216.9 19.1% 26.7%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 142.1 70.6% 45.3%;
 }
 
 .dark {
-  --background: #18181b;
-  --foreground: #f3f4f6;
-  --card: #18181b;
-  --card-foreground: #f3f4f6;
-  --popover: #18181b;
-  --popover-foreground: #f3f4f6;
-  --primary: #22c55e;
-  --primary-foreground: #18181b;
-  --secondary: #334155;
-  --secondary-foreground: #f3f4f6;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --accent: #334155;
-  --accent-foreground: #f3f4f6;
-  --destructive: #dc2626;
-  --destructive-foreground: #f3f4f6;
-  --border: #334155;
-  --input: #334155;
-  --ring: #22c55e;
-  --chart-1: #22c55e;
-  --chart-2: #f59e42;
-  --chart-3: #dc2626;
-  --chart-4: #ea580c;
-  --chart-5: #22c55e;
-  --sidebar: #18181b;
-  --sidebar-foreground: #f3f4f6;
-  --sidebar-primary: #22c55e;
-  --sidebar-primary-foreground: #f3f4f6;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #f3f4f6;
-  --sidebar-border: #334155;
-  --sidebar-ring: #22c55e;
-}
+  --background: 240 5.9% 10%;
+  --foreground: 220 14.3% 95.9%;
 
-/* Remove @theme inline for Tailwind v3 compatibility */
+  --card: 240 5.9% 10%;
+  --card-foreground: 220 14.3% 95.9%;
+
+  --popover: 240 5.9% 10%;
+  --popover-foreground: 220 14.3% 95.9%;
+
+  --primary: 142.1 70.6% 45.3%;
+  --primary-foreground: 240 5.9% 10%;
+
+  --secondary: 215.3 25% 26.7%;
+  --secondary-foreground: 220 14.3% 95.9%;
+
+  --muted: 215.3 25% 26.7%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 215.3 25% 26.7%;
+  --accent-foreground: 220 14.3% 95.9%;
+
+  --destructive: 0 72.2% 50.6%;
+  --destructive-foreground: 220 14.3% 95.9%;
+
+  --border: 215.3 25% 26.7%;
+  --input: 215.3 25% 26.7%;
+  --ring: 142.1 70.6% 45.3%;
+
+  --chart-1: 142.1 70.6% 45.3%;
+  --chart-2: 30.8 89.9% 61%;
+  --chart-3: 0 72.2% 50.6%;
+  --chart-4: 20.5 90.2% 48.2%;
+  --chart-5: 142.1 70.6% 45.3%;
+
+  --sidebar: 240 5.9% 10%;
+  --sidebar-foreground: 220 14.3% 95.9%;
+  --sidebar-primary: 142.1 70.6% 45.3%;
+  --sidebar-primary-foreground: 220 14.3% 95.9%;
+  --sidebar-accent: 215.3 25% 26.7%;
+  --sidebar-accent-foreground: 220 14.3% 95.9%;
+  --sidebar-border: 215.3 25% 26.7%;
+  --sidebar-ring: 142.1 70.6% 45.3%;
+}
 
 @layer base {
   * {
-    border-color: var(--border);
-    outline-color: var(--ring);
+    border-color: hsl(var(--border));
+    outline-color: hsl(var(--ring));
   }
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
