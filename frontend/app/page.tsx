@@ -231,19 +231,6 @@ export default function VersionDashboard() {
     (a, b) => a.order - b.order
   );
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-destructive text-destructive-foreground";
-      case "warning":
-        return "bg-yellow-500 text-yellow-950";
-      case "info":
-        return "bg-blue-500 text-blue-950";
-      default:
-        return "bg-green-500 text-green-950";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background p-4">
       <header className="mb-6">
@@ -360,17 +347,7 @@ export default function VersionDashboard() {
                       const versionData = app.versions[env.id];
 
                       if (!versionData) {
-                        return (
-                          <div
-                            key={env.id}
-                            className="p-2 rounded text-center text-xs bg-muted/30 border border-dashed border-muted-foreground/20"
-                          >
-                            <div className="text-muted-foreground">—</div>
-                            <div className="text-xs opacity-50 mt-1">
-                              Not Tracked
-                            </div>
-                          </div>
-                        );
+                        return <NotTrackedCard key={env.id} />;
                       }
 
                       const version = versionData.version;
@@ -381,38 +358,16 @@ export default function VersionDashboard() {
                       );
 
                       if (versionStatus.status === "not deployed") {
-                        return (
-                          <div
-                            key={env.id}
-                            className="p-2 rounded text-center text-xs flex items-center justify-center transition-all duration-200"
-                            style={{
-                              background:
-                                "repeating-linear-gradient(135deg, #fff, #fff 20px, #ff0000 10px, #ff0000 30px)",
-                            }}
-                          >
-                            <div className="font-mono font-bold text-center bg-white p-1 rounded">
-                              Not Deployed
-                            </div>
-                          </div>
-                        );
+                        return <NotDeployedCard key={env.id} />;
                       }
 
                       return (
-                        <div
+                        <InstanceCard
                           key={env.id}
-                          className={`p-2 rounded text-center text-xs transition-all duration-200 ${getSeverityColor(
-                            versionStatus.severity
-                          )}`}
-                        >
-                          <div className="font-mono font-medium truncate">
-                            {version}
-                          </div>
-                          {deployedAt && (
-                            <div className="text-xs opacity-75 mt-1">
-                              {new Date(deployedAt).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
+                          version={version}
+                          deployedAt={deployedAt}
+                          severity={versionStatus.severity}
+                        />
                       );
                     })}
                   </div>
@@ -430,6 +385,69 @@ export default function VersionDashboard() {
           <p className="text-muted-foreground">No applications to monitor.</p>
         </div>
       )}
+    </div>
+  );
+}
+
+const getSeverityColor = (severity: string) => {
+  switch (severity) {
+    case "critical":
+      return "bg-destructive text-destructive-foreground";
+    case "warning":
+      return "bg-yellow-500 text-yellow-950";
+    case "info":
+      return "bg-blue-500 text-blue-950";
+    default:
+      return "bg-green-500 text-green-950";
+  }
+};
+
+function NotDeployedCard() {
+  return (
+    <div
+      className="p-2 rounded text-center text-xs flex items-center justify-center transition-all duration-200"
+      style={{
+        background:
+          "repeating-linear-gradient(135deg, #fff, #fff 20px, #ff0000 10px, #ff0000 30px)",
+      }}
+    >
+      <div className="font-mono font-bold text-center bg-white p-1 rounded">
+        Not Deployed
+      </div>
+    </div>
+  );
+}
+
+function InstanceCard({
+  version,
+  deployedAt,
+  severity,
+}: {
+  version: string;
+  deployedAt?: string;
+  severity: string;
+}) {
+  return (
+    <div
+      className={`p-2 rounded text-center text-xs transition-all duration-200 ${getSeverityColor(
+        severity
+      )}`}
+    >
+      <div className="font-mono font-medium truncate">{version}</div>
+      {deployedAt && (
+        <div className="text-xs opacity-75 mt-1">
+          {new Date(deployedAt).toLocaleDateString()}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotTrackedCard() {
+  return (
+    <div className="p-2 rounded text-center text-xs bg-muted/30 border border-dashed border-muted-foreground/20">
+      <div className="text-muted-foreground">—</div>
+      <div className="text-xs opacity-50 mt-1">Not Tracked</div>
     </div>
   );
 }
