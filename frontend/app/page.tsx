@@ -148,7 +148,7 @@ export default function VersionDashboard() {
           };
         } else {
           versions[cell.instance.environment_id] = {
-            version: "not deployed",
+            version: "",
           };
         }
       });
@@ -343,11 +343,11 @@ export default function VersionDashboard() {
                     <div className="text-xs text-muted-foreground font-mono">
                       Latest: {app.latestVersion}
                     </div>
-                    {environmentRisk.level === "critical" && (
+                    {/* {environmentRisk.level === "critical" && (
                       <Badge variant="destructive" className="text-xs mt-1">
                         URGENT
                       </Badge>
-                    )}
+                    )} */}
                   </div>
 
                   <div
@@ -367,7 +367,7 @@ export default function VersionDashboard() {
                           >
                             <div className="text-muted-foreground">—</div>
                             <div className="text-xs opacity-50 mt-1">
-                              Not deployed
+                              Not Tracked
                             </div>
                           </div>
                         );
@@ -380,6 +380,23 @@ export default function VersionDashboard() {
                         app.latestVersion
                       );
 
+                      if (versionStatus.status === "not deployed") {
+                        return (
+                          <div
+                            key={env.id}
+                            className="p-2 rounded text-center text-xs flex items-center justify-center transition-all duration-200"
+                            style={{
+                              background:
+                                "repeating-linear-gradient(135deg, #fff, #fff 20px, #ff0000 10px, #ff0000 30px)",
+                            }}
+                          >
+                            <div className="font-mono font-bold text-center bg-white p-1 rounded">
+                              Not Deployed
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                         <div
                           key={env.id}
@@ -387,10 +404,7 @@ export default function VersionDashboard() {
                             versionStatus.severity
                           )}`}
                         >
-                          <div
-                            className="font-mono font-medium truncate"
-                            title={version}
-                          >
+                          <div className="font-mono font-medium truncate">
                             {version}
                           </div>
                           {deployedAt && (
