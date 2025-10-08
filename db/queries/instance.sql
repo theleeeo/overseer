@@ -31,4 +31,24 @@ FROM instances i
 LEFT JOIN deployments d ON i.id = d.instance_id
   AND d.deployed_at = (SELECT MAX(deployed_at) FROM deployments WHERE instance_id = i.id);
 
+-- name: GetInstance :one
+-- SELECT
+--   i.id,
+--   i.environment_id,
+--   i.application_id,
+--   i.name
+-- FROM instances i
+-- WHERE i.id = $1
+--    OR (i.environment_id = $2 AND i.application_id = $3)
+-- LIMIT 1;
+SELECT
+  i.id,
+  i.environment_id,
+  i.application_id,
+  i.name
+FROM instances i
+WHERE i.id = $1;
 
+-- name: DeleteInstance :exec
+DELETE FROM instances
+WHERE id = $1;

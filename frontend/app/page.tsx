@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   AlertTriangle,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { getVersionStatus, getEnvironmentRisk } from "@/lib/version-utils";
 import { AdminConfigPanel } from "@/components/admin-config-panel";
+import { CellConfigDialog } from "@/components/instance-config-dialog";
 
 interface Application {
   id: string;
@@ -32,6 +32,7 @@ interface Environment {
 
 interface VersionCell {
   instance: {
+    id: string;
     environment_id: string;
     application_id: string;
   };
@@ -64,6 +65,22 @@ export default function VersionDashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [spinning, setSpinning] = useState(false);
+
+  const [cellConfigDialog, setCellConfigDialog] = useState<{
+    open: boolean;
+    instanceId?: string;
+    environmentId: string;
+    applicationId: string;
+    environmentName: string;
+    applicationName: string;
+  }>({
+    open: false,
+    instanceId: undefined,
+    environmentId: "",
+    applicationId: "",
+    environmentName: "",
+    applicationName: "",
+  });
 
   const fetchAllData = async () => {
     try {
@@ -124,6 +141,28 @@ export default function VersionDashboard() {
       </div>
     );
   }
+
+  const openCellConfig = (envId: string, appId: string) => {
+    const environment = environments.find((env) => env.id === envId);
+    const application = applications.find((app) => app.id === appId);
+
+    if (!environment || !application) return;
+
+    const instance = versionCells.find(
+      (cell) =>
+        cell.instance.environment_id === envId &&
+        cell.instance.application_id === appId
+    )?.instance;
+
+    setCellConfigDialog({
+      open: true,
+      instanceId: instance?.id,
+      environmentId: environment.id,
+      applicationId: application.id,
+      environmentName: environment.name,
+      applicationName: application.name,
+    });
+  };
 
   const appVersions: AppVersionInfo[] = applications.map((app) => {
     const versions: Record<
@@ -347,13 +386,18 @@ export default function VersionDashboard() {
                       const versionData = app.versions[env.id];
 
                       if (!versionData) {
-                        return <NotTrackedCard key={env.id} />;
+                        return (
+                          <NotTrackedCard
+                            key={env.id}
+                            envId={env.id}
+                            appId={app.id}
+                            openConfig={openCellConfig}
+                          />
+                        );
                       }
 
-                      const version = versionData.version;
-                      const deployedAt = versionData.deployedAt;
                       const versionStatus = getVersionStatus(
-                        version,
+                        versionData.version,
                         app.latestVersion
                       );
 
@@ -364,8 +408,8 @@ export default function VersionDashboard() {
                       return (
                         <InstanceCard
                           key={env.id}
-                          version={version}
-                          deployedAt={deployedAt}
+                          version={versionData.version}
+                          deployedAt={versionData.deployedAt}
                           severity={versionStatus.severity}
                         />
                       );
@@ -385,6 +429,19 @@ export default function VersionDashboard() {
           <p className="text-muted-foreground">No applications to monitor.</p>
         </div>
       )}
+
+      <CellConfigDialog
+        open={cellConfigDialog.open}
+        onOpenChange={(open, reload) => {
+          reload ? fetchAllData() : null;
+          setCellConfigDialog({ ...cellConfigDialog, open });
+        }}
+        instanceId={cellConfigDialog.instanceId}
+        environmentId={cellConfigDialog.environmentId}
+        applicationId={cellConfigDialog.applicationId}
+        environmentName={cellConfigDialog.environmentName}
+        applicationName={cellConfigDialog.applicationName}
+      />
     </div>
   );
 }
@@ -408,7 +465,7 @@ function NotDeployedCard() {
       className="p-2 rounded text-center text-xs flex items-center justify-center transition-all duration-200"
       style={{
         background:
-          "repeating-linear-gradient(135deg, #fff, #fff 20px, #ff0000 10px, #ff0000 30px)",
+          "repeating-linear-gradient(135deg, #fff, #fff 10px, #ff0000 10px, #ff0000 30px)",
       }}
     >
       <div className="font-mono font-bold text-center bg-white p-1 rounded">
@@ -443,11 +500,23 @@ function InstanceCard({
   );
 }
 
-function NotTrackedCard() {
+const NotTrackedCard = ({
+  envId,
+  appId,
+  openConfig,
+}: {
+  envId: string;
+  appId: string;
+  openConfig: (envId: string, appId: string) => void;
+}) => {
   return (
-    <div className="p-2 rounded text-center text-xs bg-muted/30 border border-dashed border-muted-foreground/20">
+    <div
+      className="p-2 rounded text-center text-xs border border-dashed border-muted-foreground/20 cursor-pointer relative"
+      onClick={() => openConfig(envId, appId)}
+    >
       <div className="text-muted-foreground">—</div>
       <div className="text-xs opacity-50 mt-1">Not Tracked</div>
+      <div className="absolute rounded inset-0 bg-black/5 opacity-0 hover:opacity-100 transition-opacity" />
     </div>
   );
-}
+};

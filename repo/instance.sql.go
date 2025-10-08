@@ -31,6 +31,58 @@ func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) 
 	return id, err
 }
 
+const deleteInstance = `-- name: DeleteInstance :exec
+DELETE FROM instances
+WHERE id = $1
+`
+
+func (q *Queries) DeleteInstance(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteInstance, id)
+	return err
+}
+
+const getInstance = `-- name: GetInstance :one
+SELECT
+  i.id,
+  i.environment_id,
+  i.application_id,
+  i.name
+FROM instances i
+WHERE i.id = $1
+`
+
+type GetInstanceRow struct {
+	ID            int32  `json:"id"`
+	EnvironmentID int32  `json:"environment_id"`
+	ApplicationID int32  `json:"application_id"`
+	Name          string `json:"name"`
+}
+
+// SELECT
+//
+//	i.id,
+//	i.environment_id,
+//	i.application_id,
+//	i.name
+//
+// FROM instances i
+// WHERE i.id = $1
+//
+//	OR (i.environment_id = $2 AND i.application_id = $3)
+//
+// LIMIT 1;
+func (q *Queries) GetInstance(ctx context.Context, id int32) (GetInstanceRow, error) {
+	row := q.db.QueryRow(ctx, getInstance, id)
+	var i GetInstanceRow
+	err := row.Scan(
+		&i.ID,
+		&i.EnvironmentID,
+		&i.ApplicationID,
+		&i.Name,
+	)
+	return i, err
+}
+
 const listInstances = `-- name: ListInstances :many
 SELECT
   id,

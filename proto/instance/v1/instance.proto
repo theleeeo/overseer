@@ -19,6 +19,8 @@ service InstanceService {
   rpc Update(UpdateRequest) returns (UpdateResponse);
 
   rpc List(ListRequest) returns (ListResponse);
+
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
 }
 
 message ResponsePagination { int32 total = 1; }
@@ -51,3 +53,7 @@ message ListResponse {
   repeated Instance instances = 1;
   ResponsePagination pagination = 2;
 }
+
+message DeleteRequest { int32 id = 1; }
+
+message DeleteResponse {}

@@ -207,8 +207,7 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	// Should return a json where the root keys are environment names and the environment-objects have their keys being application names and their values being the corresponding AppInstance objects.
-	mux.HandleFunc("GET /instances", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /versions", func(w http.ResponseWriter, r *http.Request) {
 		instances, err := a.ListInstancesAndDeployment(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -222,5 +221,98 @@ func RegisterRestHandlers(mux *http.ServeMux, a *app.App) {
 			return
 		}
 		w.Write(jsonData)
+	})
+
+	mux.HandleFunc("GET /instances/{id}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		instance, err := a.GetInstance(r.Context(), app.GetInstanceParameters{
+			Id: int32(id),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		jsonData, err := json.Marshal(instance)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(jsonData)
+	})
+
+	mux.HandleFunc("POST /instances", func(w http.ResponseWriter, r *http.Request) {
+		var newInstance app.Instance
+		if err := json.NewDecoder(r.Body).Decode(&newInstance); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		createdInstance, err := a.CreateInstance(r.Context(), app.CreateInstanceParameters{
+			EnvironmentId: newInstance.EnvironmentId,
+			ApplicationId: newInstance.ApplicationId,
+			Name:          newInstance.Name,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		jsonData, err := json.Marshal(createdInstance)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+		w.Write(jsonData)
+	})
+
+	mux.HandleFunc("PUT /instances/{id}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var updatedInstance app.Instance
+		if err := json.NewDecoder(r.Body).Decode(&updatedInstance); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := a.UpdateInstance(r.Context(), app.UpdateInstanceParameters{
+			Id:   int32(id),
+			Name: updatedInstance.Name,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("DELETE /instances/{id}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := a.DeleteInstance(r.Context(), int32(id)); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	})
 }

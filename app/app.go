@@ -262,6 +262,36 @@ func (a *App) ListInstancesAndDeployment(ctx context.Context) ([]InstanceAndDepl
 	return result, nil
 }
 
+func (a *App) DeleteInstance(ctx context.Context, id int32) error {
+	if id == 0 {
+		return errors.New("instance id is required")
+	}
+
+	return a.db.DeleteInstance(ctx, id)
+}
+
+type GetInstanceParameters struct {
+	Id int32
+}
+
+func (a *App) GetInstance(ctx context.Context, params GetInstanceParameters) (Instance, error) {
+	if params.Id == 0 {
+		return Instance{}, errors.New("instance id is required")
+	}
+
+	i, err := a.db.GetInstance(ctx, params.Id)
+	if err != nil {
+		return Instance{}, err
+	}
+
+	return Instance{
+		Id:            i.ID,
+		EnvironmentId: i.EnvironmentID,
+		ApplicationId: i.ApplicationID,
+		Name:          i.Name,
+	}, nil
+}
+
 type ListDeploymentsParameters struct{}
 
 func (a *App) ListDeployments(ctx context.Context, params ListDeploymentsParameters) ([]Deployment, error) {

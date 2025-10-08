@@ -67,3 +67,11 @@ func (d *InstanceServer) List(ctx context.Context, req *instancepb.ListRequest) 
 		},
 	}, nil
 }
+
+func (d *InstanceServer) Delete(ctx context.Context, req *instancepb.DeleteRequest) (*instancepb.DeleteResponse, error) {
+	if err := d.app.DeleteInstance(ctx, req.Id); err != nil {
+		return nil, err
+	}
+
+	return &instancepb.DeleteResponse{}, nil
+}

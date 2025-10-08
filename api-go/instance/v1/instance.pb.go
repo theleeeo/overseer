@@ -421,6 +421,86 @@ func (x *ListResponse) GetPagination() *ResponsePagination {
 	return nil
 }
 
+type DeleteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
+	mi := &file_instance_v1_instance_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequest) ProtoMessage() {}
+
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_instance_v1_instance_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeleteRequest) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeleteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteResponse) Reset() {
+	*x = DeleteResponse{}
+	mi := &file_instance_v1_instance_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteResponse) ProtoMessage() {}
+
+func (x *DeleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_instance_v1_instance_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteResponse.ProtoReflect.Descriptor instead.
+func (*DeleteResponse) Descriptor() ([]byte, []int) {
+	return file_instance_v1_instance_proto_rawDescGZIP(), []int{9}
+}
+
 var File_instance_v1_instance_proto protoreflect.FileDescriptor
 
 const file_instance_v1_instance_proto_rawDesc = "" +
@@ -449,11 +529,15 @@ const file_instance_v1_instance_proto_rawDesc = "" +
 	"\tinstances\x18\x01 \x03(\v2\x15.instance.v1.InstanceR\tinstances\x12?\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1f.instance.v1.ResponsePaginationR\n" +
-	"pagination2\xd4\x01\n" +
+	"pagination\"\x1f\n" +
+	"\rDeleteRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\"\x10\n" +
+	"\x0eDeleteResponse2\x97\x02\n" +
 	"\x0fInstanceService\x12A\n" +
 	"\x06Create\x12\x1a.instance.v1.CreateRequest\x1a\x1b.instance.v1.CreateResponse\x12A\n" +
 	"\x06Update\x12\x1a.instance.v1.UpdateRequest\x1a\x1b.instance.v1.UpdateResponse\x12;\n" +
-	"\x04List\x12\x18.instance.v1.ListRequest\x1a\x19.instance.v1.ListResponseB\xa7\x01\n" +
+	"\x04List\x12\x18.instance.v1.ListRequest\x1a\x19.instance.v1.ListResponse\x12A\n" +
+	"\x06Delete\x12\x1a.instance.v1.DeleteRequest\x1a\x1b.instance.v1.DeleteResponseB\xa7\x01\n" +
 	"\x0fcom.instance.v1B\rInstanceProtoP\x01Z8github.com/theleeeo/overseer/api-go/instance/v1;instance\xa2\x02\x03IXX\xaa\x02\vInstance.V1\xca\x02\vInstance\\V1\xe2\x02\x17Instance\\V1\\GPBMetadata\xea\x02\fInstance::V1b\x06proto3"
 
 var (
@@ -468,7 +552,7 @@ func file_instance_v1_instance_proto_rawDescGZIP() []byte {
 	return file_instance_v1_instance_proto_rawDescData
 }
 
-var file_instance_v1_instance_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_instance_v1_instance_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_instance_v1_instance_proto_goTypes = []any{
 	(*Instance)(nil),           // 0: instance.v1.Instance
 	(*ResponsePagination)(nil), // 1: instance.v1.ResponsePagination
@@ -478,6 +562,8 @@ var file_instance_v1_instance_proto_goTypes = []any{
 	(*UpdateResponse)(nil),     // 5: instance.v1.UpdateResponse
 	(*ListRequest)(nil),        // 6: instance.v1.ListRequest
 	(*ListResponse)(nil),       // 7: instance.v1.ListResponse
+	(*DeleteRequest)(nil),      // 8: instance.v1.DeleteRequest
+	(*DeleteResponse)(nil),     // 9: instance.v1.DeleteResponse
 }
 var file_instance_v1_instance_proto_depIdxs = []int32{
 	0, // 0: instance.v1.ListResponse.instances:type_name -> instance.v1.Instance
@@ -485,11 +571,13 @@ var file_instance_v1_instance_proto_depIdxs = []int32{
 	2, // 2: instance.v1.InstanceService.Create:input_type -> instance.v1.CreateRequest
 	4, // 3: instance.v1.InstanceService.Update:input_type -> instance.v1.UpdateRequest
 	6, // 4: instance.v1.InstanceService.List:input_type -> instance.v1.ListRequest
-	3, // 5: instance.v1.InstanceService.Create:output_type -> instance.v1.CreateResponse
-	5, // 6: instance.v1.InstanceService.Update:output_type -> instance.v1.UpdateResponse
-	7, // 7: instance.v1.InstanceService.List:output_type -> instance.v1.ListResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
+	8, // 5: instance.v1.InstanceService.Delete:input_type -> instance.v1.DeleteRequest
+	3, // 6: instance.v1.InstanceService.Create:output_type -> instance.v1.CreateResponse
+	5, // 7: instance.v1.InstanceService.Update:output_type -> instance.v1.UpdateResponse
+	7, // 8: instance.v1.InstanceService.List:output_type -> instance.v1.ListResponse
+	9, // 9: instance.v1.InstanceService.Delete:output_type -> instance.v1.DeleteResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -506,7 +594,7 @@ func file_instance_v1_instance_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_instance_v1_instance_proto_rawDesc), len(file_instance_v1_instance_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
