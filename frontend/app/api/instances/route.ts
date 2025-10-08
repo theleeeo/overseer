@@ -45,7 +45,7 @@ export async function PUT(request: Request) {
       throw new Error("Failed to update instance");
     }
 
-    return NextResponse.json(await res.json());
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update application" },
@@ -71,7 +71,7 @@ export async function DELETE(request: Request) {
       throw new Error("Failed to delete instance");
     }
 
-    return NextResponse.json(await res.json());
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete application" },

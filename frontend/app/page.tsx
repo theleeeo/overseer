@@ -52,7 +52,7 @@ interface AppVersionInfo {
   name: string;
   description: string;
   versionType: string;
-  versions: Record<string, { version: string; deployedAt?: string } | null>;
+  versions: Record<string, { version: string; deployedAt: string } | null>;
   isOutdated: boolean;
   latestVersion: string;
 }
@@ -167,7 +167,7 @@ export default function VersionDashboard() {
   const appVersions: AppVersionInfo[] = applications.map((app) => {
     const versions: Record<
       string,
-      { version: string; deployedAt?: string } | null
+      { version: string; deployedAt: string } | null
     > = {};
     let isOutdated = false;
 
@@ -188,6 +188,7 @@ export default function VersionDashboard() {
         } else {
           versions[cell.instance.environment_id] = {
             version: "",
+            deployedAt: "",
           };
         }
       });
@@ -389,9 +390,7 @@ export default function VersionDashboard() {
                         return (
                           <NotTrackedCard
                             key={env.id}
-                            envId={env.id}
-                            appId={app.id}
-                            openConfig={openCellConfig}
+                            openConfig={() => openCellConfig(env.id, app.id)}
                           />
                         );
                       }
@@ -402,7 +401,12 @@ export default function VersionDashboard() {
                       );
 
                       if (versionStatus.status === "not deployed") {
-                        return <NotDeployedCard key={env.id} />;
+                        return (
+                          <NotDeployedCard
+                            key={env.id}
+                            openConfig={() => openCellConfig(env.id, app.id)}
+                          />
+                        );
                       }
 
                       return (
@@ -411,6 +415,7 @@ export default function VersionDashboard() {
                           version={versionData.version}
                           deployedAt={versionData.deployedAt}
                           severity={versionStatus.severity}
+                          openConfig={() => openCellConfig(env.id, app.id)}
                         />
                       );
                     })}
@@ -459,18 +464,20 @@ const getSeverityColor = (severity: string) => {
   }
 };
 
-function NotDeployedCard() {
+function NotDeployedCard({ openConfig }: { openConfig: () => void }) {
   return (
     <div
-      className="p-2 rounded text-center text-xs flex items-center justify-center transition-all duration-200"
+      className="p-2 rounded relative text-center text-xs flex items-center justify-center transition-all duration-200 cursor-pointer"
       style={{
         background:
           "repeating-linear-gradient(135deg, #fff, #fff 10px, #ff0000 10px, #ff0000 30px)",
       }}
+      onClick={openConfig}
     >
       <div className="font-mono font-bold text-center bg-white p-1 rounded">
         Not Deployed
       </div>
+      <div className="absolute rounded inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity" />
     </div>
   );
 }
@@ -479,40 +486,34 @@ function InstanceCard({
   version,
   deployedAt,
   severity,
+  openConfig,
 }: {
   version: string;
-  deployedAt?: string;
+  deployedAt: string;
   severity: string;
+  openConfig: () => void;
 }) {
   return (
     <div
-      className={`p-2 rounded text-center text-xs transition-all duration-200 ${getSeverityColor(
+      className={`p-2 rounded relative text-center text-xs transition-all duration-200 cursor-pointer ${getSeverityColor(
         severity
       )}`}
+      onClick={openConfig}
     >
       <div className="font-mono font-medium truncate">{version}</div>
-      {deployedAt && (
-        <div className="text-xs opacity-75 mt-1">
-          {new Date(deployedAt).toLocaleDateString()}
-        </div>
-      )}
+      <div className="text-xs opacity-75 mt-1">
+        {new Date(deployedAt).toLocaleDateString()}
+      </div>
+      <div className="absolute rounded inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity" />
     </div>
   );
 }
 
-const NotTrackedCard = ({
-  envId,
-  appId,
-  openConfig,
-}: {
-  envId: string;
-  appId: string;
-  openConfig: (envId: string, appId: string) => void;
-}) => {
+const NotTrackedCard = ({ openConfig }: { openConfig: () => void }) => {
   return (
     <div
       className="p-2 rounded text-center text-xs border border-dashed border-muted-foreground/20 cursor-pointer relative"
-      onClick={() => openConfig(envId, appId)}
+      onClick={openConfig}
     >
       <div className="text-muted-foreground">—</div>
       <div className="text-xs opacity-50 mt-1">Not Tracked</div>
